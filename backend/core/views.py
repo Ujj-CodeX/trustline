@@ -8,8 +8,14 @@ from .serializers import HelplineSerializer
 from .groq_client import classify_query, format_response
 from .global_client import get_global_resources
 
+from rest_framework.throttling import AnonRateThrottle
+
 
 class ChatQueryView(APIView):
+
+    throttle_classes = [AnonRateThrottle]
+
+
     def post(self, request):
         query_text = request.data.get("query")
 
@@ -33,11 +39,12 @@ class ChatQueryView(APIView):
         )
 
         QueryLog.objects.create(
-            query_text=query_text,
-            category=extracted.get("category", ""),
-            urgency_tier=extracted.get("urgency_tier", ""),
-            location_detected=f"{extracted.get('state')}, {extracted.get('district')}",
-        )
+    query_text=query_text,
+    category=extracted.get('category', ''),
+    urgency_tier=extracted.get('urgency_tier', ''),
+    country=extracted.get('country', ''),
+    location_detected=f"{extracted.get('state')}, {extracted.get('district')}"
+)
 
         return Response(
             {

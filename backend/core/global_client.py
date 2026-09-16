@@ -30,8 +30,9 @@ def get_global_resources(country,category):
                 ttl_expiry = now + timedelta(hours=CACHE_TTL_HOURS)
             )
             return data
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"External API fetch failed: {e}")
+        
 
 
     stale = GlobalResourceCache.objects.filter(

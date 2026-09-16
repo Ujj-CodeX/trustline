@@ -5,6 +5,7 @@ from decouple import config
 
 from .schemas import IntentSchema
 from pydantic import ValidationError
+from .rate_limiter import check_outbound_limit
 
 GROQ_MODEL = "openai/gpt-oss-120b"
 
@@ -16,6 +17,9 @@ Schema: {"category": one of [cyber_crime, domestic_violence, mental_health, chil
 
 
 def classify_query(query_text):
+    if not check_outbound_limit():
+        return {"category": "general", "urgency_tier": "general", "state": None, "district": None, "country": "India",
+                "warning": "Rate limit reached — showing general fallback. Please try again shortly."}
     resp = client.chat.completions.create(
         model=GROQ_MODEL,
         messages=[

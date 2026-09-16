@@ -24,8 +24,8 @@ class Helpline(models.Model):
 
 
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
-    country = models.CharField(max_length=100,default='India')
-    state = models.CharField(max_length=100, blank=True, null=True)
+    country = models.CharField(max_length=100,default='India',db_index=True)
+    state = models.CharField(max_length=100, blank=True, null=True,db_index=True)
     district = models.CharField(max_length=100, blank=True, null=True)
 
     priority = models.PositiveSmallIntegerField(choices=PRIORITY_CHOICES, default=1,db_index=True,)
@@ -41,17 +41,17 @@ class Helpline(models.Model):
     last_verified_date = models.DateField(blank=True, null=True)
     source_url = models.URLField(blank=True, null=True)
 
-class Meta:
-    ordering = ["-priority", "name"]
+    class Meta:
+        ordering = ["-priority", "name"]
 
-    indexing = [
+        indexes = [
             models.Index(fields=["category"]),
             models.Index(fields=["country", "category"]),
             models.Index(fields=["state", "district", "category"]),
             models.Index(fields=["priority"]),
     ]
 
-    
+
 
 
 
@@ -64,6 +64,7 @@ class Meta:
 
 class QueryLog(models.Model):
     query_text = models.TextField()
+    country = models.CharField(max_length=50, blank=True)
     category = models.CharField(max_length=50, blank=True, null=True)
     urgency_tier = models.CharField(max_length=50, blank=True, null=True)
     location_detected = models.CharField(max_length=200, blank=True, null=True)

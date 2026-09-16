@@ -25,13 +25,13 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         self.stdout.write("Fetching dataset...")
-        resp = requests.get(RAW_URL,timeout=30)
+        resp = requests.get(RAW_URL, timeout=(5, 30))
         resp.raise_for_status()
 
         data = resp.json()
 
         countries = data.get("countries", [])
-        created_count = 0
+        record_count = 0
 
 
         for country_entry in countries:
@@ -63,9 +63,9 @@ class Command(BaseCommand):
 
                     })
 
-                created_count += 1
+                record_count += len(records)
 
-        self.stdout.write(self.style.SUCCESS(f"Imported {created_count} records."))
+        self.stdout.write(self.style.SUCCESS(f"Imported {record_count} hotline records."))
 
 
 
