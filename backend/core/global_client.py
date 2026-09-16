@@ -1,11 +1,15 @@
 import requests
+import logging
+import pycountry
 
 from django.utils import timezone
 from datetime import timedelta
 from .models import GlobalResourceCache
 
-
+logger = logging.getLogger(__name__)
 CACHE_TTL_HOURS = 24
+
+
 
 def get_global_resources(country,category):
     now = timezone.now()
@@ -45,5 +49,13 @@ def get_global_resources(country,category):
     return []
 
 
-def _fetch_external_api(country,category):
+def _get_iso_code(country_name):
+    try:
+        result = pycountry.countries.search_fuzzy(country_name)
+        return result[0].alpha_2.lower()
+    except Exception:
+        return None
+
+
+def _fetch_external_api(country, category):
     return None
