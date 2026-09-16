@@ -7,8 +7,17 @@ from .models import Helpline, QueryLog
 from .serializers import HelplineSerializer
 from .groq_client import classify_query, format_response
 from .global_client import get_global_resources
-
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.throttling import AnonRateThrottle
+
+
+NATIONAL_FALLBACK = {
+    "India": [{"name": "National Emergency", "phone": "112", "note": "Police/Fire/Ambulance"}],
+    "United States": [{"name": "Emergency", "phone": "911", "note": "Police/Fire/Ambulance"}],
+    "United Kingdom": [{"name": "Emergency", "phone": "999", "note": "Police/Fire/Ambulance"}],
+    "Australia": [{"name": "Emergency", "phone": "000", "note": "Police/Fire/Ambulance"}],
+    "default": [{"name": "General Guidance", "phone": None, "note": "Please search '[your country] emergency number' or contact local police/embassy."}]
+}
 
 
 class ChatQueryView(APIView):
@@ -39,6 +48,19 @@ class ChatQueryView(APIView):
                 extracted['district'] = extracted.get('district') or geo_location.get('district')
             else:
                 extracted['country'] = 'India'
+
+                
+
+        if extracted["country"].lower() == "india":
+            helplines = self._lookup_india(extracted)
+        else:
+            helplines = self._lookup_global(extracted)
+
+        if not helplines:
+            helplines = NATIONAL_FALLBACK.get(extracted["country"], NATIONAL_FALLBACK["default"])
+            reply = "Verified local resource nahi mila. Neeche diya emergency number try karein."
+        else:
+            reply = format_response(query_text)
 
             
 
@@ -117,7 +139,9 @@ class HelplineListView(APIView):
         if category:
             qs = qs.filter(category__iexact=category)
 
-        return Response(
-            HelplineSerializer(qs, many=True).data
-        )
+        paginator = PageNumberPagination()
+        paginator.page_size = 20
+        result = paginator.paginate_queryset(qs, request)
+
+        return paginator.get_paginated_response(HelplineSerializer(result, many=True).data)
 

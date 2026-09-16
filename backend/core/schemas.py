@@ -2,16 +2,7 @@ from typing import Literal, Optional
 from pydantic import BaseModel
 
 class IntentSchema(BaseModel):
-    category: Literal[
-
-        "cyber_crime",
-        "domestic_violence",
-        "mental_health",
-        "child_helpline",
-        "women_safety",
-        "legal_aid",
-        "general",
-]
+    category: Literal["cyber_crime", "domestic_violence", "mental_health", "child_helpline", "women_safety", "legal_aid", "animal_husbandry", "general"]
 
     urgency_tier: Literal[ 
         
@@ -24,4 +15,3 @@ class IntentSchema(BaseModel):
     district: Optional[str] = None
     country: str
 
-    
