@@ -18,6 +18,8 @@ class ChatQueryView(APIView):
 
     def post(self, request):
         query_text = request.data.get("query")
+        dropdown_country = request.data.get('dropdown_country')  
+        geo_location = request.data.get('geo_location')  
 
         if not query_text:
             return Response(
@@ -26,6 +28,20 @@ class ChatQueryView(APIView):
             )
 
         extracted = classify_query(query_text)
+
+
+        if not extracted.get('country'):
+            if dropdown_country:
+                extracted['country'] = dropdown_country
+            elif geo_location and geo_location.get('country'):
+                extracted['country'] = geo_location['country']
+                extracted['state'] = extracted.get('state') or geo_location.get('state')
+                extracted['district'] = extracted.get('district') or geo_location.get('district')
+            else:
+                extracted['country'] = 'India'
+
+            
+
 
         if extracted["country"].lower() == "india":
             helplines = self._lookup_india(extracted)
@@ -104,3 +120,4 @@ class HelplineListView(APIView):
         return Response(
             HelplineSerializer(qs, many=True).data
         )
+
