@@ -2,6 +2,10 @@ import json
 from groq import Groq
 from decouple import config
 
+
+from .schemas import IntentSchema
+from pydantic import ValidationError
+
 client = Groq(api_key=config('GROQ_API_KEY'))
 SYSTEM_PROMPT = """You are an intent extractor. Return ONLY valid JSON, no extra text.
 Schema: {"category": one of [cyber_crime, domestic_violence, mental_health, child_helpline, women_safety, legal_aid, general],
@@ -22,15 +26,20 @@ def classify_query(query_text):
 )
     raw =  resp.choices[0].message.content.strip()
     try:
-        return json.loads(raw)
-    except json.JSONDecodeError:
-        data = {}
-    return {
-        "category": data.get("category") or "general",
-        "urgency_tier": data.get("urgency_tier") or "general",
-        "state": data.get("state") or None,
-        "district": data.get("district") or None,
-        "country": data.get("country") or "India",
+
+        parsed = json.loads(raw)
+        validated = IntentSchema.model_validate(parsed)
+
+        return validated.model_dump()
+
+    except (json.JSONDecodeError, ValidationError):
+
+        return {
+           "category": "general",
+           "urgency_tier": "general",
+           "state": None,
+           "district": None,
+           "country": "India",
     }
 
 def format_response(query_text, helplines):

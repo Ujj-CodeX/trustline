@@ -12,11 +12,26 @@ class Helpline(models.Model):
         ('general', 'General Emergency'),
     ]
 
+    PRIORITY_CHOICES = [
+
+        (1, "National"),
+        (2, "State"),
+        (3, "District"),
+        (4, "Local / Specialized"),
+
+    ]
+
+
 
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
     country = models.CharField(max_length=100,default='India')
     state = models.CharField(max_length=100, blank=True, null=True)
     district = models.CharField(max_length=100, blank=True, null=True)
+
+    priority = models.PositiveSmallIntegerField(choices=PRIORITY_CHOICES, default=1,db_index=True,)
+
+
+
     name = models.CharField(max_length=200)
     phone = models.CharField(max_length=20)
     whatsapp = models.CharField(max_length=20, blank=True, null=True)
@@ -26,9 +41,26 @@ class Helpline(models.Model):
     last_verified_date = models.DateField(blank=True, null=True)
     source_url = models.URLField(blank=True, null=True)
 
+class Meta:
+    ordering = ["-priority", "name"]
+
+    indexing = [
+            models.Index(fields=["category"]),
+            models.Index(fields=["country", "category"]),
+            models.Index(fields=["state", "district", "category"]),
+            models.Index(fields=["priority"]),
+    ]
+
+    
+
+
+
 
     def __str__(self):
-        return self.name
+        return (
+            f"{self.name} "
+            f"({self.country}/{self.state}/{self.district})"
+        )
 
 class QueryLog(models.Model):
     query_text = models.TextField()
