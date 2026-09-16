@@ -27,17 +27,13 @@ class ChatQueryView(APIView):
 
     def post(self, request):
         query_text = request.data.get("query")
-        dropdown_country = request.data.get('dropdown_country')  
-        geo_location = request.data.get('geo_location')  
+        dropdown_country = request.data.get('dropdown_country')
+        geo_location = request.data.get('geo_location')
 
         if not query_text:
-            return Response(
-                {"error": "query is required"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return Response({"error": "query is required"}, status=status.HTTP_400_BAD_REQUEST)
 
         extracted = classify_query(query_text)
-
 
         if not extracted.get('country'):
             if dropdown_country:
@@ -49,8 +45,6 @@ class ChatQueryView(APIView):
             else:
                 extracted['country'] = 'India'
 
-                
-
         if extracted["country"].lower() == "india":
             helplines = self._lookup_india(extracted)
         else:
@@ -58,41 +52,23 @@ class ChatQueryView(APIView):
 
         if not helplines:
             helplines = NATIONAL_FALLBACK.get(extracted["country"], NATIONAL_FALLBACK["default"])
-            reply = "Verified local resource nahi mila. Neeche diya emergency number try karein."
+            reply = "Sorry, I couldn't find any relevant helplines for your query. Please try rephrasing your question or provide more details."
         else:
             reply = format_response(query_text)
 
-            
-
-
-        if extracted["country"].lower() == "india":
-            helplines = self._lookup_india(extracted)
-        else:
-            helplines = self._lookup_global(extracted)
-
-        reply = (
-            format_response(query_text)
-            if helplines
-            else "Sorry, I couldn't find any relevant helplines for your query. Please try rephrasing your question or provide more details."
-        )
-
         QueryLog.objects.create(
-    query_text=query_text,
-    category=extracted.get('category', ''),
-    urgency_tier=extracted.get('urgency_tier', ''),
-    country=extracted.get('country', ''),
-    location_detected=f"{extracted.get('state')}, {extracted.get('district')}"
-)
-
-        return Response(
-            {
-                "extracted": extracted,
-                # Resource facts come directly from the trusted backend store.
-                # The LLM never receives or generates these values.
-                "resources": helplines,
-                "reply": reply,
-            }
+            query_text=query_text,
+            category=extracted.get('category', ''),
+            urgency_tier=extracted.get('urgency_tier', ''),
+            country=extracted.get('country', ''),
+            location_detected=f"{extracted.get('state')}, {extracted.get('district')}"
         )
+
+        return Response({
+            "extracted": extracted,
+            "resources": helplines,
+            "reply": reply,
+        })
 
     def _lookup_india(self, extracted):
         category = extracted["category"]
