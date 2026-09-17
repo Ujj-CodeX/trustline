@@ -1,4 +1,5 @@
-import { ChatPage } from "@/src/pages/ChatPage";
+"use client";
+import { ChatPage } from "@/screens/ChatPage";
 
 export default function Page() {
   const query = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("q") || "" : "";

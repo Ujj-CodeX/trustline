@@ -1,9 +1,10 @@
-import { StaticShell } from "@/src/pages/StaticShell";
+"use client";
+import { StaticShell } from "@/screens/StaticShell";
 
-export default function AboutPage() {
+export default function SafetyPage() {
   return (
     <StaticShell
-      page="about"
+      page="safety"
       onNavigate={(path) => {
         if (typeof window !== "undefined") {
           window.location.href = path;

@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { LandingPage } from "@/pages/LandingPage";
-import { ChatPage } from "@/pages/ChatPage";
-import { StaticShell } from "@/pages/StaticShell";
+import { LandingPage } from "@/screens/LandingPage";
+import { ChatPage } from "@/screens/ChatPage";
+import { StaticShell } from "@/screens/StaticShell";
 import { CountryOption } from "@/types";
 
 const COUNTRIES: CountryOption[] = [
