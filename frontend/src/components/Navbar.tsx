@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { ShieldCheck, Sun, Moon, ChevronDown, Menu, X, ArrowRight } from "lucide-react";
-import { CountryOption } from "@/src/types";
+import { CountryOption } from "@/types";
 
 interface NavbarProps {
   currentPath: string;
