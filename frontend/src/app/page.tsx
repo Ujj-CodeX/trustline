@@ -516,10 +516,9 @@ export default function Page({
 
             {/* Headline with last 2 words in teal */}
             <h1 className="text-3xl sm:text-5xl md:text-6xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-[1.12]">
-              Millions don’t know <br className="hidden sm:inline" />
-              where to turn when{" "}
-              <span className="text-teal-600 dark:text-teal-400">it</span> <br className="hidden sm:inline" />
-              <span className="text-teal-600 dark:text-teal-400">matters most.</span>
+              When you don't know <br className="hidden sm:inline" />
+              
+              <span className="text-teal-600 dark:text-teal-400">who to call, we do.</span>
             </h1>
 
             {/* Subtext */}
@@ -533,7 +532,7 @@ export default function Page({
             <div className="inline-flex items-center justify-center gap-2 mt-4 text-xs sm:text-sm text-slate-600 dark:text-slate-400 font-medium">
               <ShieldCheck className="w-4 h-4 text-teal-600 dark:text-teal-400 shrink-0" />
               <span>
-                Every number is sourced from government helplines, NGOs, and verified directories — not AI guesses.
+                Get verified helplines and support resources instantly — anywhere in the world.
               </span>
             </div>
           </div>
