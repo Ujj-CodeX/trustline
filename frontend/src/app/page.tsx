@@ -483,7 +483,7 @@ export default function Page({
           {/* Headline & Hand-drawn Note Wrapper */}
           <div className="relative max-w-4xl mx-auto text-center px-4">
             {/* Playful Handwritten Note: "Help Has No Borders" */}
-            <div className="hidden md:block absolute -right-2 lg:right-6 -top-4 rotate-[-8deg] pointer-events-none select-none">
+            <div className="hidden md:block absolute -right-10 lg:-right-16 -top-4 rotate-[-8deg] pointer-events-none select-none">
               <div className="text-teal-600 dark:text-teal-400 font-bold leading-none tracking-tight">
                 <span className="block text-xl lg:text-2xl font-serif italic">Help</span>
                 <span className="block text-xl lg:text-2xl font-serif italic pl-2">Has No</span>
@@ -545,14 +545,15 @@ export default function Page({
                 e.preventDefault();
                 handleSearchSubmit();
               }}
-              className="w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-2xl sm:rounded-full p-2 sm:p-2.5 shadow-xl shadow-slate-900/5 dark:shadow-black/50 border border-slate-200/90 dark:border-slate-800 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 transition-all focus-within:ring-2 focus-within:ring-teal-500/40"
+              className="w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-2xl sm:rounded-full p-2 sm:p-2.5 shadow-2xl shadow-teal-600/40 dark:shadow-teal-400/25 ring-2 ring-teal-500/40 dark:ring-teal-400/30 border border-teal-300 dark:border-teal-700 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 focus-within:ring-teal-500/70 dark:focus-within:ring-teal-400/60 transition-all"
+
             >
               {/* Country Dropdown Pill on Left */}
               <div className="relative shrink-0">
                 <button
                   type="button"
                   onClick={() => setIsHeroCountryDropdownOpen(!isHeroCountryDropdownOpen)}
-                  className="w-full sm:w-auto h-11 px-3.5 rounded-full bg-slate-50 hover:bg-slate-100 dark:bg-slate-850 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 font-semibold text-xs sm:text-sm flex items-center justify-between sm:justify-center gap-2 border border-slate-200/80 dark:border-slate-700/80 transition-colors cursor-pointer"
+                  className="w-full sm:w-auto h-11 px-3.5 rounded-full bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-900 dark:text-white font-semibold text-xs sm:text-sm flex items-center justify-between sm:justify-center gap-2 border border-slate-200/80 dark:border-slate-600 transition-colors cursor-pointer"
                 >
                   <span className="text-lg">{currentCountry.flag}</span>
                   <span className="truncate max-w-[85px]">{currentCountry.name}</span>
@@ -593,7 +594,7 @@ export default function Page({
                   value={inputQuery}
                   onChange={(e) => setInputQuery(e.target.value)}
                   placeholder="Describe what you need help with..."
-                  className="w-full bg-transparent text-sm sm:text-base font-medium text-slate-900 dark:text-white placeholder-slate-700 dark:placeholder-slate-300 focus:outline-none"
+                  className="w-full bg-transparent text-sm sm:text-base font-bold text-slate-900 dark:text-white placeholder-slate-700 dark:placeholder-slate-300 focus:outline-none"
                 />
                 <p className="text-[11px] text-slate-400 dark:text-slate-500 truncate mt-0.5 hidden sm:block">
                   e.g. cyber fraud, mental health support, women safety, domestic violence, disaster relief...
@@ -727,167 +728,13 @@ export default function Page({
         {/* =========================================================================
             SECTION 3: "HOW IT WORKS" 3-STEP ROW
             ========================================================================= */}
-        <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="space-y-6">
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-              How it works
-            </h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
-              {/* Step 1 */}
-              <div className="flex items-center justify-between p-2">
-                <div className="flex items-center gap-4">
-                  <div className="w-13 h-13 rounded-2xl bg-blue-50 dark:bg-blue-950/60 border border-blue-100 dark:border-blue-900/60 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0 shadow-2xs">
-                    <FileText className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <span className="text-xl sm:text-2xl font-black text-blue-600 dark:text-blue-400 block leading-none">
-                      1
-                    </span>
-                    <span className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200 block mt-1">
-                      Describe your situation
-                    </span>
-                  </div>
-                </div>
-                <ArrowRight className="hidden md:block w-5 h-5 text-slate-300 dark:text-slate-600 shrink-0 ml-2" />
-              </div>
-
-              {/* Step 2 */}
-              <div className="flex items-center justify-between p-2">
-                <div className="flex items-center gap-4">
-                  <div className="w-13 h-13 rounded-2xl bg-blue-50 dark:bg-blue-950/60 border border-blue-100 dark:border-blue-900/60 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0 shadow-2xs">
-                    <Brain className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <span className="text-xl sm:text-2xl font-black text-blue-600 dark:text-blue-400 block leading-none">
-                      2
-                    </span>
-                    <span className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200 block mt-1">
-                      AI understands your need
-                    </span>
-                  </div>
-                </div>
-                <ArrowRight className="hidden md:block w-5 h-5 text-slate-300 dark:text-slate-600 shrink-0 ml-2" />
-              </div>
-
-              {/* Step 3 */}
-              <div className="flex items-center p-2">
-                <div className="flex items-center gap-4">
-                  <div className="w-13 h-13 rounded-2xl bg-blue-50 dark:bg-blue-950/60 border border-blue-100 dark:border-blue-900/60 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0 shadow-2xs">
-                    <ShieldCheck className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <span className="text-xl sm:text-2xl font-black text-blue-600 dark:text-blue-400 block leading-none">
-                      3
-                    </span>
-                    <span className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200 block mt-1">
-                      Get verified, real contacts
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* =========================================================================
-            SECTION 4: 3 TRUST BADGES ROW
+                {/* =========================================================================
+            SECTION 3: "HOW IT WORKS" — descriptive 3-step cards
             ========================================================================= */}
-        <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
-            {/* Badge 1: Verified sources */}
-            <div className="flex items-center gap-4 p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900/70 border border-slate-200/80 dark:border-slate-800 shadow-2xs">
-              <div className="w-11 h-11 rounded-xl bg-blue-50 dark:bg-blue-950/50 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
-                <ShieldCheck className="w-6 h-6 fill-blue-600/20" />
-              </div>
-              <div>
-                <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
-                  Verified sources
-                </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                  From trusted organisations
-                </p>
-              </div>
-            </div>
 
-            {/* Badge 2: Private & anonymous */}
-            <div className="flex items-center gap-4 p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900/70 border border-slate-200/80 dark:border-slate-800 shadow-2xs">
-              <div className="w-11 h-11 rounded-xl bg-teal-50 dark:bg-teal-950/50 flex items-center justify-center text-teal-600 dark:text-teal-400 shrink-0">
-                <Lock className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
-                  Private & anonymous
-                </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                  No sign-up. No tracking.
-                </p>
-              </div>
-            </div>
 
-            {/* Badge 3: Free to use */}
-            <div className="flex items-center gap-4 p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900/70 border border-slate-200/80 dark:border-slate-800 shadow-2xs">
-              <div className="w-11 h-11 rounded-xl bg-sky-50 dark:bg-sky-950/50 flex items-center justify-center text-sky-600 dark:text-sky-400 shrink-0">
-                <LifeBuoy className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
-                  Free to use
-                </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                  Help for everyone, anytime.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
 
-        {/* =========================================================================
-            SECTION 5: "FIND SUPPORT FOR WHAT MATTERS" 6-CARD CATEGORY GRID
-            ========================================================================= */}
-        <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-            Find support for what matters
-          </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-            {categoryCards.map((card) => {
-              const Icon = card.icon;
-              return (
-                <button
-                  key={card.id}
-                  type="button"
-                  onClick={() => handleSearchSubmit(card.query)}
-                  className="group flex items-center justify-between p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:shadow-md hover:border-teal-300 dark:hover:border-teal-700 transition-all text-left cursor-pointer"
-                >
-                  <div className="flex items-center gap-4">
-                    <div
-                      className={`w-12 h-12 rounded-xl ${card.bgColor} flex items-center justify-center ${card.iconColor} shrink-0 group-hover:scale-105 transition-transform`}
-                    >
-                      <Icon className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white leading-snug">
-                        {card.title}
-                      </h3>
-                      {card.subtitle && (
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                          {card.subtitle}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-teal-600 dark:group-hover:text-teal-400 group-hover:translate-x-0.5 transition-all shrink-0 ml-3" />
-                </button>
-              );
-            })}
-          </div>
-        </section>
-
-        {/* =========================================================================
-            SECTION 6: STATS ROW (10,000+ / 195+ / 50+ / 24/7)
-            ========================================================================= */}
-        <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+            <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 py-6 border-y border-slate-200/80 dark:border-slate-800">
             {/* Stat 1: 10,000+ */}
             <div className="flex items-center gap-3.5">
@@ -950,7 +797,210 @@ export default function Page({
             </div>
           </div>
         </section>
+
+
+
+
+        
+
+        {/* =========================================================================
+            SECTION 4: 3 TRUST BADGES ROW
+            ========================================================================= */}
+                {/* =========================================================================
+            SECTION 4: 3 TRUST BADGES ROW — descriptive interactive cards
+            ========================================================================= */}
+        <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
+            {/* Badge 1: Verified sources */}
+            <div className="group p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:shadow-lg hover:-translate-y-1 hover:border-blue-300 dark:hover:border-blue-700 transition-all duration-300">
+              <div className="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-950/60 border border-blue-100 dark:border-blue-900/60 flex items-center justify-center text-blue-600 dark:text-blue-400 mb-4 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                <ShieldCheck className="w-7 h-7" />
+              </div>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                Verified sources
+              </h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
+                Every number comes from government helplines, NGOs, and
+                verified directories — reviewed regularly, never generated
+                by AI.
+              </p>
+            </div>
+
+            {/* Badge 2: Private & anonymous */}
+            <div className="group p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:shadow-lg hover:-translate-y-1 hover:border-teal-300 dark:hover:border-teal-700 transition-all duration-300">
+              <div className="w-14 h-14 rounded-2xl bg-teal-50 dark:bg-teal-950/60 border border-teal-100 dark:border-teal-900/60 flex items-center justify-center text-teal-600 dark:text-teal-400 mb-4 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                <Lock className="w-7 h-7" />
+              </div>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                Private & anonymous
+              </h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
+                No sign-up, no tracking, no stored conversations. You can ask
+                for help without leaving a trace.
+              </p>
+            </div>
+
+            {/* Badge 3: Free to use */}
+            <div className="group p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:shadow-lg hover:-translate-y-1 hover:border-sky-300 dark:hover:border-sky-700 transition-all duration-300">
+              <div className="w-14 h-14 rounded-2xl bg-sky-50 dark:bg-sky-950/60 border border-sky-100 dark:border-sky-900/60 flex items-center justify-center text-sky-600 dark:text-sky-400 mb-4 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                <LifeBuoy className="w-7 h-7" />
+              </div>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                Free to use
+              </h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
+                No cost, no premium tier. Help should never sit behind a
+                paywall — everyone gets the same access, anytime.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* =========================================================================
+            SECTION 5: "FIND SUPPORT FOR WHAT MATTERS" 6-CARD CATEGORY GRID
+            ========================================================================= */}
+               <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+            Find support for what matters
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-6 gap-4 sm:gap-5">
+            {/* Large card - Mental Health (spans 3 cols) */}
+            <button onClick={() => handleSearchSubmit(categoryCards[0].query)} className="group md:col-span-3 flex items-center justify-between p-6 rounded-2xl bg-sky-50 dark:bg-sky-950/30 border border-sky-100 dark:border-sky-900/50 hover:shadow-lg hover:-translate-y-1 transition-all text-left cursor-pointer">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-xl bg-white dark:bg-slate-900 flex items-center justify-center text-sky-500 shadow-sm group-hover:scale-110 transition-transform">
+                  <Heart className="w-7 h-7 fill-sky-500" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">Mental Health Support</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Talk to someone, anytime you need it.</p>
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-slate-400 group-hover:translate-x-1 transition-all shrink-0" />
+            </button>
+
+            {/* Medium card - Women Safety (spans 3 cols) */}
+            <button onClick={() => handleSearchSubmit(categoryCards[1].query)} className="group md:col-span-3 flex items-center justify-between p-6 rounded-2xl bg-rose-50 dark:bg-rose-950/30 border border-rose-100 dark:border-rose-900/50 hover:shadow-lg hover:-translate-y-1 transition-all text-left cursor-pointer">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-xl bg-white dark:bg-slate-900 flex items-center justify-center text-rose-500 shadow-sm group-hover:scale-110 transition-transform">
+                  <Users className="w-7 h-7 fill-rose-500" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">Women Safety & Gender Support</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Safety and support, on your terms.</p>
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-slate-400 group-hover:translate-x-1 transition-all shrink-0" />
+            </button>
+
+            {/* Small card - Cyber Crime (spans 2 cols) */}
+            <button onClick={() => handleSearchSubmit(categoryCards[2].query)} className="group md:col-span-2 flex flex-col gap-3 p-5 rounded-2xl bg-cyan-50 dark:bg-cyan-950/30 border border-cyan-100 dark:border-cyan-900/50 hover:shadow-lg hover:-translate-y-1 transition-all text-left cursor-pointer">
+              <div className="w-12 h-12 rounded-xl bg-white dark:bg-slate-900 flex items-center justify-center text-cyan-600 shadow-sm group-hover:scale-110 transition-transform">
+                <Laptop className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white">Cyber Crime Assistance</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Report fraud, recover faster.</p>
+              </div>
+            </button>
+
+            {/* Small card - Disaster Relief (spans 2 cols) */}
+            <button onClick={() => handleSearchSubmit(categoryCards[3].query)} className="group md:col-span-2 flex flex-col gap-3 p-5 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-900/50 hover:shadow-lg hover:-translate-y-1 transition-all text-left cursor-pointer">
+              <div className="w-12 h-12 rounded-xl bg-white dark:bg-slate-900 flex items-center justify-center text-amber-500 shadow-sm group-hover:scale-110 transition-transform">
+                <CloudRain className="w-6 h-6 fill-amber-500" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white">Disaster Relief & Emergency</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Fast help when it matters most.</p>
+              </div>
+            </button>
+
+            {/* Small card - Legal Aid (spans 2 cols) */}
+            <button onClick={() => handleSearchSubmit(categoryCards[4].query)} className="group md:col-span-2 flex flex-col gap-3 p-5 rounded-2xl bg-purple-50 dark:bg-purple-950/30 border border-purple-100 dark:border-purple-900/50 hover:shadow-lg hover:-translate-y-1 transition-all text-left cursor-pointer">
+              <div className="w-12 h-12 rounded-xl bg-white dark:bg-slate-900 flex items-center justify-center text-purple-600 shadow-sm group-hover:scale-110 transition-transform">
+                <Scale className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white">Legal Aid & Consumer Rights</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Know your rights, get real advice.</p>
+              </div>
+            </button>
+
+            {/* Wide card - More Categories (spans full 6 cols) */}
+            <button onClick={() => handleSearchSubmit(categoryCards[5].query)} className="group md:col-span-6 flex items-center justify-between p-5 rounded-2xl bg-teal-50 dark:bg-teal-950/30 border border-teal-100 dark:border-teal-900/50 hover:shadow-lg transition-all text-left cursor-pointer">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-white dark:bg-slate-900 flex items-center justify-center text-teal-600 shadow-sm">
+                  <MoreHorizontal className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">More Categories</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Explore all support areas we cover.</p>
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-slate-400 group-hover:translate-x-1 transition-all shrink-0" />
+            </button>
+          </div>
+        </section>
+
+        {/* =========================================================================
+            SECTION 6: STATS ROW (10,000+ / 195+ / 50+ / 24/7)
+            ========================================================================= */}
+
+            
+            
+        
+              {/* =========================================================================
+            SECTION 6: HOW IT WORKS
+            ========================================================================= */}
+        <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 sm:mt-24">
+          <div className="space-y-8">
+            <div className="text-center max-w-2xl mx-auto">
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                How it works
+              </h2>
+              <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 mt-2">
+                Three simple steps between you and real, verified help.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="group relative p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:shadow-lg hover:-translate-y-1 hover:border-blue-300 dark:hover:border-blue-700 transition-all duration-300">
+                <div className="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-950/60 border border-blue-100 dark:border-blue-900/60 flex items-center justify-center text-blue-600 dark:text-blue-400 mb-4 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                  <FileText className="w-7 h-7" />
+                </div>
+                <span className="absolute top-4 right-4 text-3xl font-black text-blue-100 dark:text-blue-900/50 select-none">01</span>
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">Describe your situation</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
+                  Type what's happening in your own words — no forms, no categories to pick.
+                </p>
+              </div>
+
+              <div className="group relative p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:shadow-lg hover:-translate-y-1 hover:border-blue-300 dark:hover:border-blue-700 transition-all duration-300">
+                <div className="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-950/60 border border-blue-100 dark:border-blue-900/60 flex items-center justify-center text-blue-600 dark:text-blue-400 mb-4 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                  <Brain className="w-7 h-7" />
+                </div>
+                <span className="absolute top-4 right-4 text-3xl font-black text-blue-100 dark:text-blue-900/50 select-none">02</span>
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">AI understands your need</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
+                  Our AI identifies category, urgency, and location — then hands off to verified data.
+                </p>
+              </div>
+
+              <div className="group relative p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:shadow-lg hover:-translate-y-1 hover:border-blue-300 dark:hover:border-blue-700 transition-all duration-300">
+                <div className="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-950/60 border border-blue-100 dark:border-blue-900/60 flex items-center justify-center text-blue-600 dark:text-blue-400 mb-4 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                  <ShieldCheck className="w-7 h-7" />
+                </div>
+                <span className="absolute top-4 right-4 text-3xl font-black text-blue-100 dark:text-blue-900/50 select-none">03</span>
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">Get verified, real contacts</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
+                  Receive real phone numbers from government helplines, NGOs, and verified directories.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
+      
 
       {/* =========================================================================
           SECTION 7: FOOTER + FIXED DISCLAIMER BAR AT BOTTOM

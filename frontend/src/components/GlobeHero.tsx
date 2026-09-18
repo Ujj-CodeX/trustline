@@ -5,7 +5,7 @@ import {
   ArrowRight,
   Sparkles,
 } from "lucide-react";
-import { CountryOption } from "@/src/types";
+import { CountryOption } from "@/types";
 
 interface GlobeHeroProps {
   onSearch: (query: string, country: string) => void;
@@ -107,9 +107,9 @@ export const GlobeHero: React.FC<GlobeHeroProps> = ({
   ];
 
   return (
-    <section className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-10 md:pt-14 md:pb-16 overflow-hidden">
+    <section className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-10 md:pt-14 md:pb-16 overflow-hidden min-h-237.5">
       {/* Background Soft Glow */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] bg-teal-100/40 dark:bg-teal-950/20 rounded-full blur-3xl pointer-events-none -z-10" />
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-175 h-87.5 bg-teal-100/40 dark:bg-teal-950/20 rounded-full blur-3xl pointer-events-auto -z-10" />
 
       {/* Top Pill Badge */}
       <div className="flex justify-center mb-6">
@@ -123,13 +123,13 @@ export const GlobeHero: React.FC<GlobeHeroProps> = ({
       </div>
 
       {/* Headline & Hand-drawn Note Wrapper with World Map Background */}
-      <div className="relative max-w-5xl mx-auto text-center px-4 pt-2">
+      <div className="relative max-w-5xl mx-auto text-center px-4 pt-2 pb-64 z-20">
         {/* World Map Dotted Image Background Texture directly behind the heroic text */}
         <div className="absolute inset-0 -top-6 sm:-top-10 -bottom-8 sm:-bottom-12 pointer-events-none select-none overflow-hidden flex items-center justify-center -z-10">
           <img
             src="/world_map_dotted.png"
             alt="World Map Texture Background"
-            className="w-full max-w-5xl h-full object-contain opacity-65 dark:opacity-30 contrast-125 select-none"
+            className=" w-[130%] max-w-none h-auto object-contain opacity-65 dark:opacity-30 contrast-125 select-none translate-y-20"
             draggable={false}
           />
           {/* Soft radial overlay for 100% text readability in both light & dark mode */}
@@ -182,7 +182,7 @@ export const GlobeHero: React.FC<GlobeHeroProps> = ({
       </div>
 
       {/* Floating Chat Input Bar (Moved Upward, immediately below heroic text & subtext) */}
-      <div className="w-full max-w-3xl lg:max-w-4xl mx-auto mt-6 sm:mt-8 px-2 sm:px-4 relative z-20">
+      <div className="w-full max-w-3xl lg:max-w-4xl mx-auto mt-10 sm:mt-14 px-2 sm:px-4 relative z-20">
         <form
           onSubmit={handleSubmit}
           className="w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-2xl sm:rounded-full p-2 sm:p-2.5 shadow-xl shadow-slate-900/5 dark:shadow-black/50 border border-slate-200/90 dark:border-slate-800 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 transition-all focus-within:ring-2 focus-within:ring-teal-500/40"
@@ -196,7 +196,7 @@ export const GlobeHero: React.FC<GlobeHeroProps> = ({
               className="w-full sm:w-auto h-11 px-3.5 rounded-full bg-slate-50 hover:bg-slate-100 dark:bg-slate-850 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 font-semibold text-xs sm:text-sm flex items-center justify-between sm:justify-center gap-2 border border-slate-200/80 dark:border-slate-700/80 transition-colors cursor-pointer"
             >
               <span className="text-lg">{currentCountry.flag}</span>
-              <span className="truncate max-w-[85px]">{currentCountry.name}</span>
+              <span className="truncate max-w-21.25">{currentCountry.name}</span>
               <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
             </button>
 
@@ -262,7 +262,19 @@ export const GlobeHero: React.FC<GlobeHeroProps> = ({
       </div>
 
       {/* World Map with 6 Pins & Curved Connecting Arcs */}
-      <div className="relative w-full max-w-5xl mx-auto mt-4 sm:mt-6 min-h-[300px] sm:min-h-[360px] md:min-h-[420px] flex items-center justify-center">
+      <div className="
+  absolute
+  left-1/2
+  -translate-x-1/2
+  top-[52%]
+  w-full
+  max-w-6xl
+  h-130
+  md:h-155
+  z-0
+  pointer-events-none
+  "
+>
         {/* World Map Dotted Image Background Texture */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden">
           <img
@@ -272,7 +284,7 @@ export const GlobeHero: React.FC<GlobeHeroProps> = ({
             draggable={false}
           />
           {/* Subtle soft edge blend overlay */}
-          <div className="absolute inset-0 bg-gradient-to-b from-slate-50/30 via-transparent to-slate-50/60 dark:from-slate-950/30 dark:via-transparent dark:to-slate-950/60 pointer-events-none" />
+          <div className="absolute inset-0 bg-linear-to-b from-slate-50/30 via-transparent to-slate-50/60 dark:from-slate-950/30 dark:via-transparent dark:to-slate-950/60 pointer-events-none" />
         </div>
 
         {/* Curved connecting flight arcs overlay (Clean cyan lines, no blinking) */}
