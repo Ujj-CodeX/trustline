@@ -378,7 +378,7 @@ export const GlobeHero: React.FC<GlobeHeroProps> = ({
               className={`flex items-center gap-2 px-3 py-1.5 rounded-full bg-white dark:bg-slate-900 border ${pin.badgeBorder} shadow-2xs text-[11px] font-semibold text-slate-800 dark:text-slate-200 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors`}
             >
               <span className={`w-2.5 h-2.5 rounded-full ${pin.dotColor} shrink-0`} />
-              <span className="truncate max-w-[180px]">{pin.label}</span>
+              <span className="truncate max-w-45">{pin.label}</span>
             </button>
           ))}
         </div>

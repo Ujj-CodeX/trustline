@@ -467,7 +467,7 @@ export default function Page({
             ========================================================================= */}
         <section className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-10 md:pt-14 md:pb-16 overflow-hidden">
           {/* Subtle Ambient Radial Glow */}
-          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] bg-teal-100/40 dark:bg-teal-950/20 rounded-full blur-3xl pointer-events-none -z-10" />
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-175 h-87.5 bg-teal-100/40 dark:bg-teal-950/20 rounded-full blur-3xl pointer-events-none -z-10" />
 
           {/* Top Pill Badge */}
           <div className="flex justify-center mb-6">
@@ -555,7 +555,7 @@ export default function Page({
                   className="w-full sm:w-auto h-11 px-3.5 rounded-full bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-900 dark:text-white font-semibold text-xs sm:text-sm flex items-center justify-between sm:justify-center gap-2 border border-slate-200/80 dark:border-slate-600 transition-colors cursor-pointer"
                 >
                   <span className="text-lg">{currentCountry.flag}</span>
-                  <span className="truncate max-w-[85px]">{currentCountry.name}</span>
+                  <span className="truncate max-w-21.25">{currentCountry.name}</span>
                   <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
                 </button>
 
@@ -613,7 +613,7 @@ export default function Page({
           </div>
 
           {/* Dotted World Map Graphic with 6 Pins & Connector Arcs */}
-          <div className="relative w-full max-w-5xl mx-auto mt-4 sm:mt-6 min-h-[300px] sm:min-h-[360px] md:min-h-[420px] flex items-center justify-center">
+          <div className="relative w-full max-w-5xl mx-auto mt-4 sm:mt-6 min-h-75 sm:min-h-90 md:min-h-105 flex items-center justify-center">
             {/* World Map Dotted Image Background Texture */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden">
               <img
@@ -623,7 +623,7 @@ export default function Page({
                 draggable={false}
               />
               {/* Subtle soft edge blend overlay */}
-              <div className="absolute inset-0 bg-gradient-to-b from-slate-50/30 via-transparent to-slate-50/60 dark:from-slate-950/30 dark:via-transparent dark:to-slate-950/60 pointer-events-none" />
+              <div className="absolute inset-0 bg-linear-to-b from-slate-50/30 via-transparent to-slate-50/60 dark:from-slate-950/30 dark:via-transparent dark:to-slate-950/60 pointer-events-none" />
             </div>
 
             {/* Curved connecting flight arcs overlay (Clean cyan lines, no blinking) */}
@@ -717,7 +717,7 @@ export default function Page({
                   className={`flex items-center gap-2 px-3 py-1.5 rounded-full bg-white dark:bg-slate-900 border ${pin.badgeBorder} shadow-2xs text-[11px] font-semibold text-slate-800 dark:text-slate-200 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors`}
                 >
                   <span className={`w-2.5 h-2.5 rounded-full ${pin.dotColor} shrink-0`} />
-                  <span className="truncate max-w-[180px]">{pin.label}</span>
+                  <span className="truncate max-w-45">{pin.label}</span>
                 </button>
               ))}
             </div>
