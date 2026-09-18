@@ -1,6 +1,6 @@
 import React from "react";
 import { Phone, ExternalLink, ShieldCheck, MapPin, Globe, FileText, Star } from "lucide-react";
-import { ResourceItem, UrgencyTier } from "@/src/types";
+import { ResourceItem, UrgencyTier } from "@/types";
 
 interface ResourceCardProps {
   resource: ResourceItem;
