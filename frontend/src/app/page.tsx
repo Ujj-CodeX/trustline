@@ -640,26 +640,7 @@ export default function Page({
                 </linearGradient>
               </defs>
 
-              {/* Arcs linking continents */}
-              <g stroke="url(#pageHeroLineGrad)" strokeWidth="1.2" strokeLinecap="round" className="opacity-80 dark:opacity-60">
-                {/* Canada (180, 155) to UK (460, 150) */}
-                <path d="M 180 155 Q 320 80, 460 150" />
-                {/* UK (460, 150) to Japan (830, 165) */}
-                <path d="M 460 150 Q 640 60, 830 165" />
-                {/* UK (460, 150) to India (650, 270) */}
-                <path d="M 460 150 Q 560 210, 650 270" />
-                {/* Canada (180, 155) to Brazil (270, 345) */}
-                <path d="M 180 155 Q 195 250, 270 345" />
-                {/* Brazil (270, 345) to India (650, 270) */}
-                <path d="M 270 345 Q 460 380, 650 270" />
-                {/* India (650, 270) to Australia (840, 375) */}
-                <path d="M 650 270 Q 755 320, 840 375" />
-                {/* Japan (830, 165) to Australia (840, 375) */}
-                <path d="M 830 165 Q 870 270, 840 375" />
-                {/* Subtle secondary connector from Brazil to Africa junction */}
-                <path d="M 270 345 Q 380 340, 490 350" />
-                <path d="M 490 350 Q 570 320, 650 270" />
-              </g>
+              
 
               {/* Static junction intersection nodes (calm, no blinkers) */}
               <g fill="#0284c7" className="opacity-60 dark:opacity-80">
