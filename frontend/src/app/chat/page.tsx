@@ -1,19 +1,17 @@
 "use client";
+import { useSearchParams } from "next/navigation";
 import { ChatPage } from "@/screens/ChatPage";
 
 export default function Page() {
-  const query = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("q") || "" : "";
-  const country = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("country") || "India" : "India";
+  const searchParams = useSearchParams();
+  const query = searchParams.get("q") || "";
+  const country = searchParams.get("country") || "India";
 
   return (
     <ChatPage
       initialQuery={query}
       selectedCountry={country}
-      onNavigate={(path) => {
-        if (typeof window !== "undefined") {
-          window.location.href = path;
-        }
-      }}
+      onNavigate={(path) => { window.location.href = path; }}
       countries={[
         { code: "IN", name: "India", flag: "🇮🇳" },
         { code: "US", name: "United States", flag: "🇺🇸" },

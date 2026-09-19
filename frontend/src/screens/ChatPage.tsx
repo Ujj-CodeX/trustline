@@ -12,7 +12,7 @@ import {
 import { ChatBubble } from "@/components/ChatBubble";
 import { ResourceCard } from "@/components/ResourceCard";
 import { fetchChatResponse } from "@/lib/api";
-import { Message, ResourceItem, ExtractedIntent, CountryOption } from "@/types";
+import { Message, ResourceItem, ExtractedIntent, CountryOption, UrgencyTier } from "@/types";
 
 interface ChatPageProps {
   initialQuery?: string;
@@ -69,7 +69,7 @@ export const ChatPage: React.FC<ChatPageProps> = ({
     setBackendNotice(null);
 
     try {
-      const { data, isFallback } = await fetchChatResponse(
+      const { data } = await fetchChatResponse(
         queryText.trim(),
         selectedCountry,
         null
@@ -92,11 +92,6 @@ export const ChatPage: React.FC<ChatPageProps> = ({
       setCurrentExtracted(data.extracted || null);
       setCurrentResources(data.resources || []);
 
-      if (isFallback) {
-        setBackendNotice(
-          "Django backend at http://127.0.0.1:8000 is not reachable from this preview browser. Showing verified demonstration records."
-        );
-      }
     } catch (err) {
       console.error("Chat error:", err);
       setMessages((prev) => {
@@ -121,68 +116,7 @@ export const ChatPage: React.FC<ChatPageProps> = ({
 
     if (initialQuery && initialQuery.trim()) {
       handleSendMessage(initialQuery.trim());
-    } else {
-      // Default initial thread matching the user reference screenshot
-      const defaultUserMsg: Message = {
-        id: "msg-user-initial",
-        sender: "user",
-        text: "cyber fraud happened to my friend in Lucknow",
-        timestamp: "10:24 AM",
-      };
-
-      const defaultAiMsg: Message = {
-        id: "msg-ai-initial",
-        sender: "ai",
-        text: "I'm sorry to hear about this. Cyber fraud can be very stressful, but help is available. Here are some verified helplines in Lucknow and general cyber crime resources that you can reach out to.",
-        timestamp: "10:24 AM",
-      };
-
-      setMessages([defaultUserMsg, defaultAiMsg]);
-
-      // Seed current resources matching screenshot 2
-      setCurrentExtracted({
-        category: "Cyber Crime",
-        urgency_tier: "urgent",
-        state: "Uttar Pradesh",
-        district: "Lucknow",
-        country: selectedCountry || "India",
-        warning: null,
-      });
-
-      setCurrentResources([
-        {
-          id: 1,
-          name: "Uttar Pradesh Cyber Crime Helpline",
-          title: "Uttar Pradesh Cyber Crime Helpline",
-          organization: "Uttar Pradesh Police",
-          department: "Cyber Crime Division",
-          description: "Report cyber fraud, online scams, financial fraud, etc.",
-          phone: "1930",
-          priority: 1,
-          state: "Uttar Pradesh",
-          district: "Lucknow",
-          country: "India",
-          languages: ["Hindi", "English"],
-          type: "Official Government Helpline",
-          availability: "24/7",
-          is_india_db: true,
-        },
-        {
-          id: 2,
-          name: "National Cyber Crime Reporting Portal",
-          title: "National Cyber Crime Reporting Portal",
-          organization: "Ministry of Home Affairs, Government of India",
-          description: "Report cyber crime complaints online directly to law enforcement authorities.",
-          website: "https://www.cybercrime.gov.in",
-          url: "https://www.cybercrime.gov.in",
-          state: "All States",
-          country: "India",
-          languages: ["Hindi", "English"],
-          type: "Central Government Portal",
-          is_india_db: true,
-        },
-      ]);
-    }
+    } 
   }, [initialQuery, selectedCountry]);
 
   useEffect(() => {
@@ -222,6 +156,7 @@ export const ChatPage: React.FC<ChatPageProps> = ({
               setMessages([]);
               setCurrentResources([]);
               setCurrentExtracted(null);
+              setBackendNotice(null);
               hasTriggeredInitialQuery.current = false;
               setInputQuery("");
             }}
@@ -282,7 +217,7 @@ export const ChatPage: React.FC<ChatPageProps> = ({
             <div className="pt-2">
               <ResourceCard
                 resource={topResource}
-                urgencyTier={currentExtracted?.urgency_tier || "general"}
+                urgencyTier={currentExtracted?.urgency_tier as UrgencyTier || "general"}
                 isTopRecommended={true}
               />
             </div>
@@ -305,7 +240,7 @@ export const ChatPage: React.FC<ChatPageProps> = ({
                   <ResourceCard
                     key={res.id || index}
                     resource={res}
-                    urgencyTier={currentExtracted?.urgency_tier || "general"}
+                    urgencyTier={currentExtracted?.urgency_tier as UrgencyTier || "general"}
                     isTopRecommended={false}
                   />
                 ))}

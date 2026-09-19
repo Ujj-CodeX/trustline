@@ -1,6 +1,6 @@
 import React from "react";
 import { ShieldCheck, CheckCheck } from "lucide-react";
-import { Message } from "@/src/types";
+import { Message } from "@/types";
 
 interface ChatBubbleProps {
   message: Message;

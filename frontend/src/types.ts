@@ -12,7 +12,7 @@ export interface ChatRequestBody {
   geo_location: GeoLocation | null;
 }
 
-interface ExtractedIntent {
+export interface ExtractedIntent {
   category: string;
   urgency_tier: string;
   state?: string | null;
