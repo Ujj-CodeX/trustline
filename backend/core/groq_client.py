@@ -15,46 +15,36 @@ client = Groq(api_key=config('GROQ_API_KEY'))
 SYSTEM_PROMPT = """You are an intent extractor. Return ONLY valid JSON, no extra text.
 Schema: {"category": one of [cyber_crime, domestic_violence, mental_health, child_helpline, women_safety, legal_aid, animal_husbandry, general],
 "urgency_tier": one of [emergency, urgent, general],
-"state": string or null, "district": string or null, "country": string}"""
+"state": string or null, "district": string or null, "country": string or empty string if not mentioned}
+IMPORTANT: If the query does NOT explicitly mention a location, country, city, or state, return "country": "", "state": null, "district": null. Do NOT guess or assume a default location."""
 
 
 def classify_query(query_text):
     if not check_outbound_limit():
-        return {"category": "general", "urgency_tier": "general", "state": None, "district": None, "country": "India",
+        return {"category": "general", "urgency_tier": "general", "state": None, "district": None, "country": "",
                 "warning": "Rate limit reached — showing general fallback. Please try again shortly."}
-    resp = client.chat.completions.create(
-        model=GROQ_MODEL,
-        messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": query_text},
-        ],
-        temperature=0,
-    )
-
-    raw = resp.choices[0].message.content.strip()
-
     try:
-
+        resp = client.chat.completions.create(
+            model=GROQ_MODEL,
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": query_text},
+            ],
+            temperature=0,
+            timeout=5,
+        )
+        raw = resp.choices[0].message.content.strip()
         parsed = json.loads(raw)
         validated = IntentSchema.model_validate(parsed)
-
         return validated.model_dump()
 
     except (json.JSONDecodeError, ValidationError):
+        return {"category": "general", "urgency_tier": "general", "state": None, "district": None, "country": ""}
 
-        return {
-           "category": "general",
-           "urgency_tier": "general",
-           "state": None,
-           "district": None,
-           "country": "India",
-    }
     except Exception:
-        # Groq timeout / API down
         data = keyword_fallback_classify(query_text)
         data['warning'] = "AI classification unavailable — basic keyword match used."
         return data
-
 
 def format_response(query_text):
     """Generate only natural-language guidance.
