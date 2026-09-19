@@ -13,6 +13,7 @@ interface StaticShellProps {
 
 export const StaticShell: React.FC<StaticShellProps> = ({ page, onNavigate }) => {
   const Wrapper = ({ children }: { children: React.ReactNode }) => (
+  <div className="min-h-screen w-full bg-white dark:bg-slate-950">
     <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 pb-24 space-y-8">
       <button onClick={() => onNavigate("/")} className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:text-teal-700 dark:hover:text-teal-300 cursor-pointer">
         <ArrowLeft className="w-4 h-4" /> Back to Home
@@ -22,7 +23,8 @@ export const StaticShell: React.FC<StaticShellProps> = ({ page, onNavigate }) =>
         <ShieldCheck className="w-4 h-4" /> Launch TrustLine Chat
       </button>
     </div>
-  );
+  </div>
+);
 
   const Header = ({ Icon, title, tagline }: any) => (
     <div className="flex items-center gap-4">

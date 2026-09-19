@@ -46,68 +46,65 @@ export const ChatPage: React.FC<ChatPageProps> = ({
   };
 
   const handleSendMessage = async (queryText: string) => {
-    if (!queryText.trim() || isLoading) return;
+  if (!queryText.trim() || isLoading) return;
 
-    const userMessage: Message = {
-      id: `user-${Date.now()}`,
-      sender: "user",
-      text: queryText.trim(),
-      timestamp: getFormattedTime(),
-    };
+  const userMessage: Message = { id: `user-${Date.now()}`, sender: "user", text: queryText.trim(), timestamp: getFormattedTime() };
+  const typingMessage: Message = { id: `typing-${Date.now()}`, sender: "ai", text: "Searching verified databases...", timestamp: getFormattedTime(), isTyping: true };
 
-    const typingMessage: Message = {
-      id: `typing-${Date.now()}`,
-      sender: "ai",
-      text: "Searching verified databases...",
-      timestamp: getFormattedTime(),
-      isTyping: true,
-    };
+  setMessages((prev) => [...prev, userMessage, typingMessage]);
+  setInputQuery("");
+  setIsLoading(true);
+  setBackendNotice(null);
 
-    setMessages((prev) => [...prev, userMessage, typingMessage]);
-    setInputQuery("");
-    setIsLoading(true);
-    setBackendNotice(null);
+  let geoLocation = null;
+  let countryToSend: string | null = null;
 
-    try {
-      const { data } = await fetchChatResponse(
-        queryText.trim(),
-        selectedCountry,
-        null
-      );
-
-      // Remove typing bubble and append real reply
-      setMessages((prev) => {
-        const withoutTyping = prev.filter((m) => !m.isTyping);
-        const aiMessage: Message = {
-          id: `ai-${Date.now()}`,
-          sender: "ai",
-          text: data.reply || "Here are the verified support resources for your query.",
-          timestamp: getFormattedTime(),
-          extracted: data.extracted,
-          resources: data.resources,
-        };
-        return [...withoutTyping, aiMessage];
-      });
-
-      setCurrentExtracted(data.extracted || null);
-      setCurrentResources(data.resources || []);
-
-    } catch (err) {
-      console.error("Chat error:", err);
-      setMessages((prev) => {
-        const withoutTyping = prev.filter((m) => !m.isTyping);
-        const errorMessage: Message = {
-          id: `ai-err-${Date.now()}`,
-          sender: "ai",
-          text: "An error occurred while connecting to the helpline directory. Please try again or contact emergency services directly if in immediate danger.",
-          timestamp: getFormattedTime(),
-        };
-        return [...withoutTyping, errorMessage];
-      });
-    } finally {
-      setIsLoading(false);
+  if (!hasLocationInQuery(queryText)) {
+    if (selectedCountry) {
+      countryToSend = selectedCountry;
+    } else {
+      geoLocation = await getGeoLocation();
     }
-  };
+  }
+
+  try {
+    const { data, error } = await fetchChatResponse(queryText.trim(), countryToSend, geoLocation);
+
+    setMessages((prev) => {
+      const withoutTyping = prev.filter((m) => !m.isTyping);
+      const aiMessage: Message = {
+        id: `ai-${Date.now()}`,
+        sender: "ai",
+        text: data.reply || "Here are the verified support resources for your query.",
+        timestamp: getFormattedTime(),
+        extracted: data.extracted,
+        resources: data.resources,
+      };
+      return [...withoutTyping, aiMessage];
+    });
+
+    setCurrentExtracted(data.extracted || null);
+    setCurrentResources(data.resources || []);
+
+    if (error) {
+      setBackendNotice("Could not reach the backend. Please try again.");
+    }
+  } catch (err) {
+    console.error("Chat error:", err);
+    setMessages((prev) => {
+      const withoutTyping = prev.filter((m) => !m.isTyping);
+      const errorMessage: Message = {
+        id: `ai-err-${Date.now()}`,
+        sender: "ai",
+        text: "An error occurred. Please try again or contact emergency services directly if in immediate danger.",
+        timestamp: getFormattedTime(),
+      };
+      return [...withoutTyping, errorMessage];
+    });
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   // Seed default greeting or initial query if navigated from landing page
   useEffect(() => {
@@ -133,7 +130,48 @@ export const ChatPage: React.FC<ChatPageProps> = ({
     "If money has been deducted, contact your bank immediately to freeze the transaction.",
   ];
 
+
+  const hasLocationInQuery = (text: string): boolean => {
+  return /\b(in|near|at)\s+[A-Z][a-zA-Z]+/.test(text);
+};
+
+const getGeoLocation = async (): Promise<{ country: string; state: string; district: string } | null> => {
+  const cached = sessionStorage.getItem("trustline_geo");
+  if (cached !== null) {
+    return cached === "null" ? null : JSON.parse(cached);
+  }
+
+  const result = await new Promise<{ country: string; state: string; district: string } | null>((resolve) => {
+    if (!navigator.geolocation) {
+      resolve(null);
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const { latitude, longitude } = pos.coords;
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`);
+          const data = await res.json();
+          resolve({
+            country: data.address?.country || "",
+            state: data.address?.state || "",
+            district: data.address?.county || data.address?.city_district || data.address?.city || "",
+          });
+        } catch {
+          resolve(null);
+        }
+      },
+      () => resolve(null),
+      { timeout: 5000 }
+    );
+  });
+
+  sessionStorage.setItem("trustline_geo", result ? JSON.stringify(result) : "null");
+  return result;
+};
+
   return (
+  <div className="min-h-screen w-full bg-white dark:bg-slate-950">
     <div id="chat-page-root" className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 space-y-6">
       {/* Top Breadcrumb & Return to Landing */}
       <div className="flex items-center justify-between gap-4">
@@ -310,5 +348,6 @@ export const ChatPage: React.FC<ChatPageProps> = ({
         </div>
       </div>
     </div>
+  </div>
   );
 };

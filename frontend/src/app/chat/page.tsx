@@ -5,7 +5,7 @@ import { ChatPage } from "@/screens/ChatPage";
 export default function Page() {
   const searchParams = useSearchParams();
   const query = searchParams.get("q") || "";
-  const country = searchParams.get("country") || "India";
+  const country = searchParams.get("country") || "";
 
   return (
     <ChatPage

@@ -26,6 +26,7 @@ import {
   Sparkles,
   Menu,
   X,
+  MapPin,
 } from "lucide-react";
 
 interface CountryItem {
@@ -64,7 +65,7 @@ export default function Page({
 }: PageProps) {
   const countries = propCountries || DEFAULT_COUNTRIES;
   const [selectedCountry, setSelectedCountry] = useState<string>(
-    propCountry || "India"
+    propCountry || ""
   );
   const [inputQuery, setInputQuery] = useState("");
   const [isNavCountryDropdownOpen, setIsNavCountryDropdownOpen] = useState(false);
@@ -129,19 +130,20 @@ export default function Page({
   };
 
   const handleSearchSubmit = (queryToSearch?: string) => {
-    const q = (queryToSearch || inputQuery).trim();
-    if (onNavigateToChat) {
-      onNavigateToChat(q, selectedCountry);
-    } else if (typeof window !== "undefined") {
-      const params = new URLSearchParams();
-      if (q) params.set("q", q);
-      if (selectedCountry) params.set("country", selectedCountry);
-      window.location.href = `/chat?${params.toString()}`;
-    }
-  };
+  const q = (queryToSearch || inputQuery).trim();
+  if (onNavigateToChat) {
+    onNavigateToChat(q, selectedCountry);  // empty string bhejega agar dropdown select nahi hua
+  } else if (typeof window !== "undefined") {
+    const params = new URLSearchParams();
+    if (q) params.set("q", q);
+    if (selectedCountry) params.set("country", selectedCountry);  // yeh sahi hai — empty ho toh param hi skip
+    window.location.href = `/chat?${params.toString()}`;
+  }
+};
 
   const currentCountry =
-    countries.find((c) => c.name === selectedCountry) || countries[0];
+  countries.find((c) => c.name === selectedCountry) || 
+  { code: "", name: "Select Country", flag: "🌐" };
 
   // 6 Map Location Pins (Exact match to screenshot - calm static halos, NO blinkers/twinkling)
   const mapPins = [
@@ -655,38 +657,39 @@ export default function Page({
             <div className="hidden md:block absolute inset-0 pointer-events-auto">
               {mapPins.map((pin) => (
                 <div
-                  key={pin.id}
-                  style={{ left: `${pin.x}%`, top: `${pin.y}%` }}
-                  className="absolute -translate-x-1/2 -translate-y-1/2 flex items-center gap-2.5 group cursor-pointer z-10 select-none"
-                  onClick={() => {
-                    handleCountrySelect(pin.country);
-                    handleSearchSubmit(pin.query);
-                  }}
-                  title={`Click to find ${pin.label}`}
-                >
-                  {/* Static Halo & Colored Dot - Strictly NO blinkers / NO twinkling */}
-                  <div className="relative flex items-center justify-center shrink-0">
-                    <div
-                      className={`w-7 h-7 rounded-full ${pin.haloColor} flex items-center justify-center transition-transform group-hover:scale-110 shadow-2xs`}
-                    >
-                      <span className={`w-3 h-3 rounded-full ${pin.dotColor} shadow-xs`} />
-                    </div>
-                  </div>
+  key={pin.id}
+  style={{ left: `${pin.x}%`, top: `${pin.y}%` }}
+  className="absolute -translate-x-1/2 -translate-y-1/2 flex items-center gap-2.5 group cursor-pointer z-10 select-none"
+  onClick={() => {
+    handleCountrySelect(pin.country);
+    handleSearchSubmit(pin.query);
+  }}
+  title={`Click to find ${pin.label}`}
+>
+  {/* Icon — fixed, no animation */}
+  <div className="relative flex items-center justify-center shrink-0">
+    <div className={`w-7 h-7 rounded-full ${pin.haloColor} flex items-center justify-center transition-transform group-hover:scale-110 shadow-2xs`}>
+      <MapPin className={`w-4 h-4 ${pin.dotColor.replace('bg-', 'text-')}`} fill="currentColor" />
+    </div>
+  </div>
 
-                  {/* White Floating Pill Badge */}
-                  <div
-                    className={`bg-white/95 dark:bg-slate-900/95 backdrop-blur-xs px-3 py-1.5 rounded-full border ${pin.badgeBorder} shadow-xs group-hover:shadow-md transition-all group-hover:-translate-y-0.5`}
-                  >
-                    <span className="text-[11px] sm:text-xs font-semibold text-slate-800 dark:text-slate-200 whitespace-nowrap">
-                      {pin.label}
-                    </span>
-                  </div>
-                </div>
+  {/* Text pill — floating */}
+  <div
+    style={{ animationDelay: `${pin.x * 20}ms` }}
+    className={`animate-float bg-white/95 dark:bg-slate-900/95 backdrop-blur-xs px-3 py-1.5 rounded-full border ${pin.badgeBorder} shadow-xs group-hover:shadow-md transition-all group-hover:-translate-y-0.5`}
+  >
+    <span className="text-[11px] sm:text-xs font-semibold text-slate-800 dark:text-slate-200 whitespace-nowrap">
+      {pin.label}
+    </span>
+  </div>
+</div>
               ))}
             </div>
 
             {/* Mobile View: Clean Stacked Location Badges below world map */}
             <div className="md:hidden w-full pt-4 pb-2 z-10 flex flex-wrap justify-center gap-2">
+
+              
               {mapPins.map((pin) => (
                 <button
                   key={pin.id}
@@ -907,7 +910,7 @@ export default function Page({
             </button>
 
             {/* Wide card - More Categories (spans full 6 cols) */}
-            <button onClick={() => handleSearchSubmit(categoryCards[5].query)} className="group md:col-span-6 flex items-center justify-between p-5 rounded-2xl bg-teal-50 dark:bg-teal-950/30 border border-teal-100 dark:border-teal-900/50 hover:shadow-lg transition-all text-left cursor-pointer">
+            <button onClick={() => handleNavigate("/resources")} className="group md:col-span-6 flex items-center justify-between p-5 rounded-2xl bg-teal-50 dark:bg-teal-950/30 border border-teal-100 dark:border-teal-900/50 hover:shadow-lg transition-all text-left cursor-pointer">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-xl bg-white dark:bg-slate-900 flex items-center justify-center text-teal-600 shadow-sm">
                   <MoreHorizontal className="w-6 h-6" />
