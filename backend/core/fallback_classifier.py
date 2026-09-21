@@ -6,6 +6,7 @@ KEYWORD_MAP = {
     "mental_health": ["suicide", "suicidal", "depression", "anxiety", "self harm"],
     "legal_aid": ["legal help", "lawyer", "court", "rights"],
     "animal_husbandry": ["animal", "cattle", "livestock", "pet injured"],
+    "health_emergency": ["medical emergency", "injury", "accident", "ambulance", "hospital"],
 }
 
 
@@ -17,3 +18,4 @@ def keyword_fallback_classify(query_text):
             return {"category": category, "urgency_tier": "urgent", "state": None, "district": None, "country": "India"}
 
     return {"category": "general", "urgency_tier": "general", "state": None, "district": None, "country": "India"}
+

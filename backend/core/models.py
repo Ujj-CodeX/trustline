@@ -3,14 +3,15 @@ from django.db import models
 # Create your models here.
 class Helpline(models.Model):
     CATEGORY_CHOICES = [
-        ('cyber_crime', 'Cyber Crime'),
-        ('domestic_violence', 'Domestic Violence'),
-        ('mental_health', 'Mental Health'),
-        ('child_helpline', 'Child Helpline'),
-        ('women_safety', 'Women Safety'),
-        ('legal_aid', 'Legal Aid'),
-        ('general', 'General Emergency'),
-    ]
+    ('cyber_crime', 'Cyber Crime'),
+    ('domestic_violence', 'Domestic Violence'),
+    ('mental_health', 'Mental Health'),
+    ('child_helpline', 'Child Helpline'),
+    ('women_safety', 'Women Safety'),
+    ('legal_aid', 'Legal Aid'),
+    ('health_emergency', 'Health Emergency'),
+    ('general', 'General Emergency'),
+]
 
     PRIORITY_CHOICES = [
 

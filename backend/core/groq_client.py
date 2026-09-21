@@ -13,8 +13,7 @@ GROQ_MODEL = "openai/gpt-oss-120b"
 
 client = Groq(api_key=config('GROQ_API_KEY'))
 SYSTEM_PROMPT = """You are an intent extractor. Return ONLY valid JSON, no extra text.
-Schema: {"category": one of [cyber_crime, domestic_violence, mental_health, child_helpline, women_safety, legal_aid, animal_husbandry, general],
-"urgency_tier": one of [emergency, urgent, general],
+Schema: {"category": one of [cyber_crime, domestic_violence, mental_health, child_helpline, women_safety, legal_aid, health_emergency, animal_husbandry, general],
 "state": string or null, "district": string or null, "country": string or empty string if not mentioned}
 IMPORTANT: If the query does NOT explicitly mention a location, country, city, or state, return "country": "", "state": null, "district": null. Do NOT guess or assume a default location."""
 
