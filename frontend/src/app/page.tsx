@@ -1,5 +1,5 @@
 "use client";
-
+import { useScrollReveal } from "@/hooks/useScrollReveal";
 import React, { useState, useEffect } from "react";
 import {
   ShieldCheck,
@@ -72,6 +72,12 @@ export default function Page({
   const [isHeroCountryDropdownOpen, setIsHeroCountryDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [darkMode, setDarkMode] = useState<boolean>(false);
+
+
+  const statsReveal = useScrollReveal();
+  const howItWorksReveal = useScrollReveal();
+  const trustReveal = useScrollReveal();
+  const categoriesReveal = useScrollReveal();
 
   // Initialize theme from localStorage or document class
   useEffect(() => {
@@ -273,6 +279,7 @@ export default function Page({
       {/* =========================================================================
           SECTION 1: NAVBAR (Logo + Tagline, Nav Links, Country Dropdown, Dark Mode)
           ========================================================================= */}
+
       <nav className="sticky top-0 z-50 w-full bg-white/95 dark:bg-slate-950/95 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800/80 transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
@@ -717,7 +724,10 @@ export default function Page({
 
 
 
-            <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+            <section
+  ref={statsReveal.ref as any}
+  className={`w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 transition-all duration-700 ${statsReveal.isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
+>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 py-6 border-y border-slate-200/80 dark:border-slate-800">
             {/* Stat 1: 10,000+ */}
             <div className="flex items-center gap-3.5">
@@ -792,7 +802,10 @@ export default function Page({
                 {/* =========================================================================
             SECTION 4: 3 TRUST BADGES ROW — descriptive interactive cards
             ========================================================================= */}
-        <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <section
+  ref={trustReveal.ref as any}
+  className={`w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 transition-all duration-700 ${statsReveal.isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
+>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
             {/* Badge 1: Verified sources */}
             <div className="group p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:shadow-lg hover:-translate-y-1 hover:border-blue-300 dark:hover:border-blue-700 transition-all duration-300">
@@ -842,7 +855,10 @@ export default function Page({
         {/* =========================================================================
             SECTION 5: "FIND SUPPORT FOR WHAT MATTERS" 6-CARD CATEGORY GRID
             ========================================================================= */}
-               <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+               <section
+  ref={categoriesReveal.ref as any}
+  className={`w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 transition-all duration-700 ${statsReveal.isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
+>
           <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
             Find support for what matters
           </h2>
@@ -935,7 +951,10 @@ export default function Page({
               {/* =========================================================================
             SECTION 6: HOW IT WORKS
             ========================================================================= */}
-        <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 sm:mt-24">
+        <section
+  ref={howItWorksReveal.ref as any}
+  className={`w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 transition-all duration-700 ${statsReveal.isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
+>
           <div className="space-y-8">
             <div className="text-center max-w-2xl mx-auto">
               <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
