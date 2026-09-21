@@ -60,11 +60,17 @@ export const ChatPage: React.FC<ChatPageProps> = ({
   let countryToSend: string | null = null;
 
   if (!hasLocationInQuery(queryText)) {
+    console.log("[DEBUG] No location in query. selectedCountry =", JSON.stringify(selectedCountry));
     if (selectedCountry) {
+      console.log("[DEBUG] Using dropdown:", selectedCountry);
       countryToSend = selectedCountry;
     } else {
+      console.log("[DEBUG] Triggering geolocation...");
       geoLocation = await getGeoLocation();
+      console.log("[DEBUG] Geolocation result:", geoLocation);
     }
+  } else {
+    console.log("[DEBUG] Location detected IN QUERY, skipping geo/dropdown");
   }
 
   try {
@@ -161,8 +167,10 @@ const getGeoLocation = async (): Promise<{ country: string; state: string; distr
           resolve(null);
         }
       },
-      () => resolve(null),
-      { timeout: 5000 }
+      (err) => { console.log("[DEBUG] Geolocation ERROR:", err.code, err.message);
+    resolve(null); 
+     },
+     { timeout: 5000 }
     );
   });
 

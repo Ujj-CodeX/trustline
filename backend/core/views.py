@@ -46,7 +46,10 @@ class ChatQueryView(APIView):
                 extracted['country'] = 'India'
 
         if extracted["country"].lower() == "india":
-            helplines = self._lookup_india(extracted)
+            if extracted.get("state") or extracted.get("district"):
+              helplines = self._lookup_india(extracted)
+            else:
+              helplines = []  # force fallback when no location signal at all
         else:
             helplines = self._lookup_global(extracted)
 
