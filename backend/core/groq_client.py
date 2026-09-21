@@ -14,10 +14,21 @@ GROQ_MODEL = "openai/gpt-oss-120b"
 client = Groq(api_key=config('GROQ_API_KEY'))
 SYSTEM_PROMPT = """You are an intent extractor. Return ONLY valid JSON, no extra text.
 Schema: {"category": one of [cyber_crime, domestic_violence, mental_health, child_helpline, women_safety, legal_aid, health_emergency, animal_husbandry, general],
+"urgency_tier": one of [emergency, urgent, general],
 "state": string or null, "district": string or null, "country": string or empty string if not mentioned}
-IMPORTANT: If the query does NOT explicitly mention a location, country, city, or state, return "country": "", "state": null, "district": null. Do NOT guess or assume a default location."""
 
+IMPORTANT RULES:
+- If the query mentions fraud, scam, hacking, online theft, or financial cyber crime, category MUST be "cyber_crime".
+- If the query mentions a specific city or district (e.g. Lucknow, Delhi, Mumbai), extract it into "district" and infer its "state" if it's an Indian city.
+- If the query does NOT explicitly mention a location, return "country": "", "state": null, "district": null. Do NOT guess.
 
+Examples:
+Query: "cyber fraud happened to my friend in Lucknow"
+Output: {"category": "cyber_crime", "urgency_tier": "urgent", "state": "Uttar Pradesh", "district": "Lucknow", "country": "India"}
+
+Query: "need medical help"
+Output: {"category": "health_emergency", "urgency_tier": "emergency", "state": null, "district": null, "country": ""}
+"""
 def classify_query(query_text):
     if not check_outbound_limit():
         return {"category": "general", "urgency_tier": "general", "state": None, "district": None, "country": "",

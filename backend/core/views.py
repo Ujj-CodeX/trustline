@@ -3,12 +3,15 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
-from .models import Helpline, QueryLog
+from .models import Helpline, QueryLog, ChatSession
 from .serializers import HelplineSerializer
 from .groq_client import classify_query, format_response
 from .global_client import get_global_resources
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.throttling import AnonRateThrottle
+from django.utils.text import slugify
+
+
 
 
 NATIONAL_FALLBACK = {
@@ -19,6 +22,16 @@ NATIONAL_FALLBACK = {
     "default": [{"name": "General Guidance", "phone": None, "note": "Please search '[your country] emergency number' or contact local police/embassy."}]
 }
 
+
+
+def generate_slug(category, country, state, district):
+        parts = [ category, country ]
+        if state:
+            parts.append(state)
+        if district:
+            parts.append(district)
+        base = slugify("-".join(parts))
+        return base
 
 class ChatQueryView(APIView):
 
@@ -59,6 +72,7 @@ class ChatQueryView(APIView):
         else:
             reply = format_response(query_text)
 
+
         QueryLog.objects.create(
             query_text=query_text,
             category=extracted.get('category', ''),
@@ -67,10 +81,43 @@ class ChatQueryView(APIView):
             location_detected=f"{extracted.get('state')}, {extracted.get('district')}"
         )
 
+        
+        slug_base =  generate_slug(
+            extracted.get('category', 'general'),
+            extracted.get('country', 'india'),
+            extracted.get('state'),
+            extracted.get('district')
+        )
+
+        existing = ChatSession.objects.filter(slug=slug_base).first()
+
+        if existing:
+            session_slug = existing.slug
+        else:
+            slug_candidate = slug_base
+            counter = 1
+            while ChatSession.objects.filter(slug=slug_candidate).exists():
+               slug_candidate = f"{slug_base}-{counter}"
+               counter += 1
+            ChatSession.objects.create(
+              slug=slug_candidate,
+              query_text=query_text,
+              category=extracted.get('category', ''),
+              urgency_tier=extracted.get('urgency_tier', ''),
+              country=extracted.get('country', ''),
+              state=extracted.get('state'),
+              district=extracted.get('district'),
+              resources=helplines,
+              reply=reply,
+            )
+            session_slug = slug_candidate
+            
+
         return Response({
             "extracted": extracted,
             "resources": helplines,
             "reply": reply,
+            "slug": session_slug,
         })
 
     def _lookup_india(self, extracted):
@@ -107,6 +154,9 @@ class ChatQueryView(APIView):
         )
 
 
+    
+
+
 class HelplineListView(APIView):
     def get(self, request):
         qs = Helpline.objects.all()
@@ -124,3 +174,22 @@ class HelplineListView(APIView):
 
         return paginator.get_paginated_response(HelplineSerializer(result, many=True).data)
 
+
+
+class ChatSessionDetailView(APIView):
+    def get(self, request, slug):
+        session = ChatSession.objects.filter(slug=slug).first()
+        if not session:
+            return Response({"error": "Not found"}, status=404)
+        return Response({
+            "extracted": {
+                "category": session.category,
+                "urgency_tier": session.urgency_tier,
+                "state": session.state,
+                "district": session.district,
+                "country": session.country,
+            },
+            "resources": session.resources,
+            "reply": session.reply,
+
+        })

@@ -83,3 +83,20 @@ class GlobalResourceCache(models.Model):
     license_type = models.CharField(max_length=50, blank=True, null=True)
     fetched_at = models.DateTimeField(auto_now_add=True)
     ttl_expiry = models.DateTimeField()
+
+class ChatSession(models.Model):
+    slug = models.SlugField(max_length=255, unique=True)
+    query_text = models.TextField()
+    category = models.CharField(max_length=50)
+    urgency_tier = models.CharField(max_length=20, blank=True)
+    country = models.CharField(max_length=50)
+    state = models.CharField(max_length=100, blank=True, null=True)
+    district = models.CharField(max_length=100, blank=True, null=True)
+    resources = models.JSONField(default=list)
+    reply = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+     
+    class Meta:
+        indexes = [models.Index(fields=["slug"])]
+
+
