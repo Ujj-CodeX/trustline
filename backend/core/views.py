@@ -183,6 +183,7 @@ class ChatSessionDetailView(APIView):
             return Response({"error": "Not found"}, status=404)
         return Response({
             "extracted": {
+                "query_text": session.query_text,
                 "category": session.category,
                 "urgency_tier": session.urgency_tier,
                 "state": session.state,

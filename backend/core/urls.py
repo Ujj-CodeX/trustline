@@ -6,3 +6,4 @@ urlpatterns = [
     path('helplines/', HelplineListView.as_view(), name='helplines'),
     path('chat/<slug:slug>/', ChatSessionDetailView.as_view(), name='chat-session-detail'),
 ]
+
