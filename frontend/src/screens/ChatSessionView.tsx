@@ -20,10 +20,23 @@ const DEFAULT_COUNTRIES = [
   { code: "ZA", name: "South Africa", flag: "🇿🇦" },
 ];
 
+
+
 export function ChatSessionView({ session, slug }: { session: any; slug: string }) {
   const router = useRouter();
   const topResource = session.resources?.[0];
   const otherResources = session.resources?.slice(1) || [];
+
+
+  const handleContinue = () => {
+  sessionStorage.setItem("trustline_resume", JSON.stringify({
+    query_text: session.query_text,
+    reply: session.reply,
+    extracted: session.extracted,
+    resources: session.resources,
+  }));
+  router.push(`/chat?resume=true&country=${session.extracted.country}`);
+};
 
   return (
     <div className="min-h-screen w-full bg-white dark:bg-slate-950 flex flex-col">
@@ -64,9 +77,9 @@ export function ChatSessionView({ session, slug }: { session: any; slug: string 
         </div>
 
         <button
-          onClick={() => router.push(`/chat?q=${encodeURIComponent(session.query_text)}&country=${session.extracted.country}`)}
-          className="w-full py-3 rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-semibold text-sm shadow-sm transition-transform active:scale-95"
-        >
+          onClick={handleContinue}
+          className="w-full py-3 rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-semibold text-sm shadow-sm transition-transform active:scale-95">
+            
           Continue this conversation →
         </button>
       </div>

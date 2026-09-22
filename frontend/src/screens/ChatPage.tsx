@@ -17,6 +17,7 @@ import { Message, ResourceItem, ExtractedIntent, CountryOption, UrgencyTier } fr
 interface ChatPageProps {
   initialQuery?: string;
   selectedCountry: string;
+  resumeFromStorage?: boolean;
   onNavigate: (path: string) => void;
   countries: CountryOption[];
 }
@@ -24,6 +25,7 @@ interface ChatPageProps {
 export const ChatPage: React.FC<ChatPageProps> = ({
   initialQuery = "",
   selectedCountry,
+  resumeFromStorage = false,
   onNavigate,
 }) => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -117,6 +119,23 @@ export const ChatPage: React.FC<ChatPageProps> = ({
     if (hasTriggeredInitialQuery.current) return;
     hasTriggeredInitialQuery.current = true;
 
+    if (resumeFromStorage){
+      const saved = sessionStorage.getItem("trustline_resume");
+      if (saved) {
+        const data = JSON.parse(saved);
+        setMessages([
+          {id:"resumed-user", sender: "user" , text: data.query_text, timestamp: getFormattedTime() },
+          {id: "resumed-ai", sender: "ai", text: data.reply, timestamp: getFormattedTime() },
+        ]);
+
+        setCurrentExtracted(data.extracted);
+        setCurrentResources(data.resources || [] );
+        sessionStorage.removeItem("trustline_resume");
+        return;
+
+      }
+    }
+
     if (initialQuery && initialQuery.trim()) {
       handleSendMessage(initialQuery.trim());
     } 
@@ -164,7 +183,7 @@ const getGeoLocation = async (): Promise<{ country: string; state: string; distr
             district: data.address?.county || data.address?.city_district || data.address?.city || "",
           });
         } catch {
-          resolve(null);
+          resolve(null)
         }
       },
       (err) => { console.log("[DEBUG] Geolocation ERROR:", err.code, err.message);

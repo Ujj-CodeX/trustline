@@ -6,11 +6,14 @@ export default function Page() {
   const searchParams = useSearchParams();
   const query = searchParams.get("q") || "";
   const country = searchParams.get("country") || "";
+  const resume = searchParams.get("resume") === "true";
 
   return (
     <ChatPage
       initialQuery={query}
       selectedCountry={country}
+      resumeFromStorage={resume}
+      
       onNavigate={(path) => { window.location.href = path; }}
       countries={[
         { code: "IN", name: "India", flag: "🇮🇳" },
