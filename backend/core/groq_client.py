@@ -56,24 +56,28 @@ def classify_query(query_text):
         data['warning'] = "AI classification unavailable — basic keyword match used."
         return data
 
-def format_response(query_text):
+def format_response(query_text,resources=None):
     """Generate only natural-language guidance.
 
     Resource facts such as phone numbers, names, verification status, and URLs
     are intentionally NOT passed to the LLM. They are returned separately by
     the backend from the trusted resource store. """
 
+    if resources:
+        descriptions = [r.get("description") for r in resources if r.get("description")]
+        if descriptions:
+            context_notes = "\nAdditional context about the resources: " + " | ".join(descriptions)
+
     try:
         resp = client.chat.completions.create(
             model=GROQ_MODEL,
             messages=[
                 {"role": "system", "content": (
-                    "You are the response assistant for a verified support routing system. "
-                    "Write a short, warm, actionable response to the user's query. "
-                    "Do not provide phone numbers, URLs, organization names, or other factual "
-                    "resource details. Those details are supplied separately by the backend."
+                    "You are the response assistant... "
+                    "You may reference relevant additional context about resources if provided, "
+                    "but never invent phone numbers, names, or URLs."
                 )},
-                {"role": "user", "content": f"User asked: {query_text}"},
+                {"role": "user", "content": f"User asked: {query_text}{context_notes}"},
             ],
             temperature=0.3,
             timeout=5,

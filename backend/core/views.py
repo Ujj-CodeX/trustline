@@ -70,7 +70,7 @@ class ChatQueryView(APIView):
             helplines = NATIONAL_FALLBACK.get(extracted["country"], NATIONAL_FALLBACK["default"])
             reply = "Sorry, I couldn't find any relevant helplines for your query. Please try rephrasing your question or provide more details."
         else:
-            reply = format_response(query_text)
+            reply = format_response(query_text,helplines)
 
 
         QueryLog.objects.create(

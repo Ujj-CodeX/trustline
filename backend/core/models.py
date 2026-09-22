@@ -41,6 +41,7 @@ class Helpline(models.Model):
     verified_by = models.CharField(max_length=200, blank=True, null=True)
     last_verified_date = models.DateField(blank=True, null=True)
     source_url = models.URLField(blank=True, null=True)
+    description = models.TextField(blank=True, null=True, help_text="Extra context for LLM — designation, special instructions, eligibility criteria etc.")
 
     class Meta:
         ordering = ["-priority", "name"]
