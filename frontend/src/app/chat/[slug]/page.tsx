@@ -8,8 +8,9 @@ async function getSession(slug: string) {
   return res.json();
 }
 
-export async function generateMetadata({ params }: { params: { slug: string } }) {
-  const session = await getSession(params.slug);
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const session = await getSession(slug);
   if (!session) {
     return { title: "TrustLine | Not Found" };
   }
@@ -21,12 +22,13 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   };
 }
 
-export default async function ChatSessionPage({ params }: { params: { slug: string } }) {
-  const session = await getSession(params.slug);
+export default async function ChatSessionPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const session = await getSession(slug);
 
   if (!session) {
     return <div className="p-10 text-center">Session not found.</div>;
   }
 
-  return <ChatSessionView session={session} slug={params.slug} />;
+  return <ChatSessionView session={session} slug={slug} />;
 }
