@@ -1,6 +1,7 @@
 import React from "react";
 import { ShieldCheck, CheckCheck } from "lucide-react";
 import { Message } from "@/types";
+import ReactMarkdown from "react-markdown";
 
 interface ChatBubbleProps {
   message: Message;
@@ -13,7 +14,7 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
     return (
       <div id={`chat-msg-${message.id}`} className="flex flex-col items-end mb-4">
         <div className="max-w-md md:max-w-xl bg-teal-700 dark:bg-teal-800 text-white px-5 py-3 rounded-2xl rounded-tr-xs shadow-xs text-sm md:text-base leading-relaxed break-words">
-          {message.text}
+          <ReactMarkdown>{message.text}</ReactMarkdown>
         </div>
         <div className="flex items-center gap-1.5 mt-1 text-[11px] text-slate-400 dark:text-slate-500 mr-1">
           <span>{message.timestamp}</span>
