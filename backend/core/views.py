@@ -15,12 +15,24 @@ from django.utils.text import slugify
 
 
 NATIONAL_FALLBACK = {
-    "India": [{"name": "National Emergency", "phone": "112", "note": "Police/Fire/Ambulance"}],
+    "India": {
+        "cyber_crime": [{"name": "National Cyber Crime Helpline", "phone": "1930"}],
+        "mental_health": [{"name": "Tele-MANAS / KIRAN", "phone": "14416"}],
+        "child_helpline": [{"name": "Child Helpline", "phone": "1098"}],
+        "women_safety": [{"name": "Women Helpline", "phone": "181"}],
+        "default": [{"name": "National Emergency", "phone": "112"}],
+    },
     "United States": [{"name": "Emergency", "phone": "911", "note": "Police/Fire/Ambulance"}],
     "United Kingdom": [{"name": "Emergency", "phone": "999", "note": "Police/Fire/Ambulance"}],
     "Australia": [{"name": "Emergency", "phone": "000", "note": "Police/Fire/Ambulance"}],
     "default": [{"name": "General Guidance", "phone": None, "note": "Please search '[your country] emergency number' or contact local police/embassy."}]
 }
+
+def get_fallback(country, category):
+    if country == "India":
+        return NATIONAL_FALLBACK["India"].get(category, NATIONAL_FALLBACK["India"]["default"])
+    return NATIONAL_FALLBACK.get(country, NATIONAL_FALLBACK.get("default", [{"name": "General Guidance", "phone": None}]))
+
 
 
 
@@ -58,20 +70,17 @@ class ChatQueryView(APIView):
             else:
                 extracted['country'] = 'India'
 
+        # FIX: India lookup ALWAYS runs — never skipped for missing location
         if extracted["country"].lower() == "india":
-            if extracted.get("state") or extracted.get("district"):
-              helplines = self._lookup_india(extracted)
-            else:
-              helplines = []  # force fallback when no location signal at all
+            helplines = self._lookup_india(extracted)
         else:
             helplines = self._lookup_global(extracted)
 
         if not helplines:
-            helplines = NATIONAL_FALLBACK.get(extracted["country"], NATIONAL_FALLBACK["default"])
-            reply = "Sorry, I couldn't find any relevant helplines for your query. Please try rephrasing your question or provide more details."
+            helplines = get_fallback(extracted["country"], extracted["category"])
+            reply = "Verified local resource nahi mila is category ke liye. Neeche diya emergency number try karein."
         else:
             reply = format_response(query_text, helplines, extracted.get('language', 'English'))
-
 
         QueryLog.objects.create(
             query_text=query_text,
@@ -81,8 +90,7 @@ class ChatQueryView(APIView):
             location_detected=f"{extracted.get('state')}, {extracted.get('district')}"
         )
 
-        
-        slug_base =  generate_slug(
+        slug_base = generate_slug(
             extracted.get('category', 'general'),
             extracted.get('country', 'india'),
             extracted.get('state'),
@@ -90,30 +98,29 @@ class ChatQueryView(APIView):
         )
 
         existing = ChatSession.objects.filter(slug=slug_base).first()
-
         if existing:
             session_slug = existing.slug
         else:
             slug_candidate = slug_base
             counter = 1
             while ChatSession.objects.filter(slug=slug_candidate).exists():
-               slug_candidate = f"{slug_base}-{counter}"
-               counter += 1
+                slug_candidate = f"{slug_base}-{counter}"
+                counter += 1
             ChatSession.objects.create(
-              slug=slug_candidate,
-              query_text=query_text,
-              category=extracted.get('category', ''),
-              urgency_tier=extracted.get('urgency_tier', ''),
-              country=extracted.get('country', ''),
-              state=extracted.get('state'),
-              district=extracted.get('district'),
-              resources=helplines,
-              reply=reply,
+                slug=slug_candidate,
+                query_text=query_text,
+                category=extracted.get('category', ''),
+                urgency_tier=extracted.get('urgency_tier', ''),
+                country=extracted.get('country', ''),
+                state=extracted.get('state'),
+                district=extracted.get('district'),
+                resources=helplines,
+                reply=reply,
             )
             session_slug = slug_candidate
-            
 
         return Response({
+            "query_text": query_text,
             "extracted": extracted,
             "resources": helplines,
             "reply": reply,
@@ -126,7 +133,6 @@ class ChatQueryView(APIView):
         district = extracted.get("district")
 
         qs = Helpline.objects.filter(country__iexact="India", category=category)
-
         if state:
             qs = qs.filter(Q(state__iexact=state) | Q(state__isnull=True))
         if district:
@@ -135,12 +141,18 @@ class ChatQueryView(APIView):
         results = list(qs)
 
         def sort_key(h):
-           district_match = 0 if (district and h.district and h.district.lower() == district.lower()) else 1
-           state_match = 0 if (state and h.state and h.state.lower() == state.lower()) else 1
-           return (district_match, state_match, -h.priority)
+            district_match = 0 if (district and h.district and h.district.lower() == district.lower()) else 1
+            state_match = 0 if (state and h.state and h.state.lower() == state.lower()) else 1
+            return (district_match, state_match, -h.priority)
 
         results.sort(key=sort_key)
         return HelplineSerializer(results[:5], many=True).data
+
+    def _lookup_global(self, extracted):
+        data = get_global_resources(extracted["country"], extracted["category"])
+        verification_rank = {"verified_authority": 0, "verified_web": 1, "cross_referenced": 2, "legacy_unverified": 3}
+        data.sort(key=lambda r: verification_rank.get(r.get("verification_status"), 4))
+        return data
 
     def _lookup_global(self, extracted):
         data = get_global_resources(extracted["country"],extracted["category"])

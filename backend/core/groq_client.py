@@ -9,9 +9,13 @@ from .rate_limiter import check_outbound_limit
 
 from .fallback_classifier import keyword_fallback_classify
 
+from .intent_classifier import classify_intent
+
 GROQ_MODEL = "openai/gpt-oss-120b"
 
 client = Groq(api_key=config('GROQ_API_KEY'))
+
+
 SYSTEM_PROMPT = """You are an intent extractor. Return ONLY valid JSON, no extra text.
 Schema: {"category": one of [cyber_crime, domestic_violence, mental_health, child_helpline, women_safety, legal_aid, health_emergency, animal_husbandry, general],
 "urgency_tier": one of [emergency, urgent, general],
@@ -31,15 +35,20 @@ Output: {"category": "cyber_crime", "urgency_tier": "urgent", "state": "Uttar Pr
 Query: "mujhe madad chahiye, mera paisa cheat ho gaya"
 Output: {"category": "cyber_crime", "urgency_tier": "urgent", "state": null, "district": null, "country": "", "language": "Hindi"}
 """
+
+
 def classify_query(query_text):
     if not check_outbound_limit():
         return {"category": "general", "urgency_tier": "general", "state": None, "district": None, "country": "",
-                "warning": "Rate limit reached — showing general fallback. Please try again shortly."}
+                "warning": "Rate limit reached — showing general fallback."}
+
+    intent_result = classify_intent(query_text)
+
     try:
         resp = client.chat.completions.create(
             model=GROQ_MODEL,
             messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "system", "content": SYSTEM_PROMPT},  
                 {"role": "user", "content": query_text},
             ],
             temperature=0,
@@ -48,15 +57,25 @@ def classify_query(query_text):
         raw = resp.choices[0].message.content.strip()
         parsed = json.loads(raw)
         validated = IntentSchema.model_validate(parsed)
-        return validated.model_dump()
+        result = validated.model_dump()
+
+        result["category"]=intent_result["category"]
+        result["confidence"] = intent_result["confidence"]
+
+        return result
 
     except (json.JSONDecodeError, ValidationError):
-        return {"category": "general", "urgency_tier": "general", "state": None, "district": None, "country": ""}
-
+        return {"category": intent_result["category"], "confidence": intent_result["confidence"],
+                "urgency_tier": "general", "state": None, "district": None, "country": ""}
     except Exception:
         data = keyword_fallback_classify(query_text)
-        data['warning'] = "AI classification unavailable — basic keyword match used."
+        data["category"] = intent_result["category"]
+        data["confidence"] = intent_result["confidence"]
+        data["warning"] = "AI location extraction unavailable — category still classified via local model."
         return data
+
+
+    
 
 def format_response(query_text,resources=None, user_lang="English"):
     """Generate only natural-language guidance.
