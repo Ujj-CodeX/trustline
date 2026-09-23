@@ -44,11 +44,16 @@ export interface ResourceItem {
   state?: string;
   district?: string;
   country?: string;
-  languages?: string[] | string;
+  languages?: string[] | string | null ;
   website?: string;
   url?: string;
   type?: string;
   availability?: string; // e.g., "24/7"
+
+  whatsapp?: string | null;
+  available_24x7?: boolean | null;
+  verified_by?: string | null;
+  
 }
 
 export interface ChatResponseBody {

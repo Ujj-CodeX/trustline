@@ -1,5 +1,5 @@
 import React from "react";
-import { Phone, ExternalLink, ShieldCheck, MapPin, Globe, FileText, Star } from "lucide-react";
+import { Phone, ExternalLink, ShieldCheck, MapPin, Globe, FileText, Star, MessageCircle, Clock } from "lucide-react";
 import { ResourceItem, UrgencyTier } from "@/types";
 
 interface ResourceCardProps {
@@ -145,27 +145,45 @@ export const ResourceCard: React.FC<ResourceCardProps> = ({
 
         {/* Metadata Chips */}
         <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
-          {locationText && (
-            <div className="flex items-center gap-1">
-              <MapPin className="w-3.5 h-3.5 text-slate-400" />
-              <span>{locationText}</span>
-            </div>
-          )}
+  {locationText && (
+    <div className="flex items-center gap-1">
+      <MapPin className="w-3.5 h-3.5 text-slate-400" />
+      <span>{locationText}</span>
+    </div>
+  )}
+  {languagesText && (
+    <div className="flex items-center gap-1">
+      <Globe className="w-3.5 h-3.5 text-slate-400" />
+      <span>{languagesText}</span>
+    </div>
+  )}
+  {resource.type && (
+    <div className="flex items-center gap-1">
+      <FileText className="w-3.5 h-3.5 text-slate-400" />
+      <span>{resource.type}</span>
+    </div>
+  )}
+  {resource.available_24x7 !== undefined && resource.available_24x7 !== null && (
+    <div className="flex items-center gap-1">
+      <Clock className="w-3.5 h-3.5 text-slate-400" />
+      <span>{resource.available_24x7 ? "24/7 Available" : "Limited Hours"}</span>
+    </div>
+  )}
+  {resource.verified_by && (
+    <div className="flex items-center gap-1">
+      <ShieldCheck className="w-3.5 h-3.5 text-teal-500" />
+      <span>Verified by {resource.verified_by}</span>
+    </div>
+  )}
+</div>
 
-          {languagesText && (
-            <div className="flex items-center gap-1">
-              <Globe className="w-3.5 h-3.5 text-slate-400" />
-              <span>{languagesText}</span>
-            </div>
-          )}
-
-          {resource.type && (
-            <div className="flex items-center gap-1">
-              <FileText className="w-3.5 h-3.5 text-slate-400" />
-              <span>{resource.type}</span>
-            </div>
-          )}
-        </div>
+{resource.whatsapp && (
+  <div className="mt-2 flex items-center gap-1.5 text-xs text-green-600 dark:text-green-400">
+    <MessageCircle className="w-3.5 h-3.5" />
+    <span>WhatsApp: {resource.whatsapp}</span>
+    <span className="text-slate-400">(calling preferred for urgent help)</span>
+  </div>
+)}
       </div>
     );
   }
@@ -211,6 +229,17 @@ export const ResourceCard: React.FC<ResourceCardProps> = ({
               {resource.description}
             </p>
           )}
+
+          {resource.whatsapp && (
+          <p className="text-[11px] text-green-600 dark:text-green-400 pt-0.5">
+           WhatsApp: {resource.whatsapp}
+          </p>
+          )}
+         {resource.available_24x7 !== undefined && resource.available_24x7 !== null && (
+          <p className="text-[11px] text-slate-400 pt-0.5">
+         {resource.available_24x7 ? "24/7 Available" : "Limited Hours"}
+         </p>
+         )}
         </div>
       </div>
 

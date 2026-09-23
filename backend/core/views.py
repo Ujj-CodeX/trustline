@@ -70,7 +70,7 @@ class ChatQueryView(APIView):
             helplines = NATIONAL_FALLBACK.get(extracted["country"], NATIONAL_FALLBACK["default"])
             reply = "Sorry, I couldn't find any relevant helplines for your query. Please try rephrasing your question or provide more details."
         else:
-            reply = format_response(query_text,helplines)
+            reply = format_response(query_text, helplines, extracted.get('language', 'English'))
 
 
         QueryLog.objects.create(
@@ -125,35 +125,36 @@ class ChatQueryView(APIView):
         state = extracted.get("state")
         district = extracted.get("district")
 
-        qs = Helpline.objects.filter(
-            country__iexact="India",
-            category=category,
-        )
+        qs = Helpline.objects.filter(country__iexact="India", category=category)
 
-        # Keep only resources matching the requested location hierarchy:
-        # district-specific, state-specific, or national fallback.
         if state:
-            qs = qs.filter(
-                Q(state__iexact=state) | Q(state__isnull=True)
-            )
-
+            qs = qs.filter(Q(state__iexact=state) | Q(state__isnull=True))
         if district:
-            qs = qs.filter(
-                Q(district__iexact=district) | Q(district__isnull=True)
-            )
+            qs = qs.filter(Q(district__iexact=district) | Q(district__isnull=True))
 
-        return HelplineSerializer(
-            qs.order_by("-priority", "name")[:5],
-            many=True,
-        ).data
+        results = list(qs)
+
+        def sort_key(h):
+           district_match = 0 if (district and h.district and h.district.lower() == district.lower()) else 1
+           state_match = 0 if (state and h.state and h.state.lower() == state.lower()) else 1
+           return (district_match, state_match, -h.priority)
+
+        results.sort(key=sort_key)
+        return HelplineSerializer(results[:5], many=True).data
 
     def _lookup_global(self, extracted):
-        return get_global_resources(
-            extracted["country"],
-            extracted["category"],
-        )
+        data = get_global_resources(extracted["country"],extracted["category"])
 
+        verification_rank = {
+             "verified_authority": 0,
+             "verified_web":1,
+             "cross_referenced": 2,
+             "legacy_unverified": 3,
+            }
 
+        data.sort(key=lambda r: verification_rank.get(r.get("verification_status"),4))
+        return data
+    
     
 
 

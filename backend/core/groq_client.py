@@ -15,19 +15,21 @@ client = Groq(api_key=config('GROQ_API_KEY'))
 SYSTEM_PROMPT = """You are an intent extractor. Return ONLY valid JSON, no extra text.
 Schema: {"category": one of [cyber_crime, domestic_violence, mental_health, child_helpline, women_safety, legal_aid, health_emergency, animal_husbandry, general],
 "urgency_tier": one of [emergency, urgent, general],
-"state": string or null, "district": string or null, "country": string or empty string if not mentioned}
+"state": string or null, "district": string or null, "country": string or empty string if not mentioned,
+"language": the language the user wrote their query in, e.g. "English", "Hindi", "Tamil"}
 
 IMPORTANT RULES:
 - If the query mentions fraud, scam, hacking, online theft, or financial cyber crime, category MUST be "cyber_crime".
-- If the query mentions a specific city or district (e.g. Lucknow, Delhi, Mumbai), extract it into "district" and infer its "state" if it's an Indian city.
-- If the query does NOT explicitly mention a location, return "country": "", "state": null, "district": null. Do NOT guess.
+- If the query mentions a specific city or district, extract it into "district" and infer its "state" if it's an Indian city.
+- If the query does NOT explicitly mention a location, return "country": "", "state": null, "district": null.
+- Detect "language" from the script/words used in the query itself, not the topic.
 
 Examples:
 Query: "cyber fraud happened to my friend in Lucknow"
-Output: {"category": "cyber_crime", "urgency_tier": "urgent", "state": "Uttar Pradesh", "district": "Lucknow", "country": "India"}
+Output: {"category": "cyber_crime", "urgency_tier": "urgent", "state": "Uttar Pradesh", "district": "Lucknow", "country": "India", "language": "English"}
 
-Query: "need medical help"
-Output: {"category": "health_emergency", "urgency_tier": "emergency", "state": null, "district": null, "country": ""}
+Query: "mujhe madad chahiye, mera paisa cheat ho gaya"
+Output: {"category": "cyber_crime", "urgency_tier": "urgent", "state": null, "district": null, "country": "", "language": "Hindi"}
 """
 def classify_query(query_text):
     if not check_outbound_limit():
@@ -56,30 +58,40 @@ def classify_query(query_text):
         data['warning'] = "AI classification unavailable — basic keyword match used."
         return data
 
-def format_response(query_text,resources=None):
+def format_response(query_text,resources=None, user_lang="English"):
     """Generate only natural-language guidance.
 
     Resource facts such as phone numbers, names, verification status, and URLs
     are intentionally NOT passed to the LLM. They are returned separately by
     the backend from the trusted resource store. """
 
+    context_notes = ""
+
     if resources:
         descriptions = [r.get("description") for r in resources if r.get("description")]
         if descriptions:
-            context_notes = "\nAdditional context about the resources: " + " | ".join(descriptions)
+            context_notes = "\nVerified context (use ONLY this, nothing else): " + " | ".join(descriptions)
 
     try:
         resp = client.chat.completions.create(
             model=GROQ_MODEL,
-            messages=[
+           messages=[
                 {"role": "system", "content": (
-                    "You are the response assistant... "
-                    "You may reference relevant additional context about resources if provided, "
-                    "but never invent phone numbers, names, or URLs."
+                    "You are a response formatter for a verified helpline system. "
+                    "Write EXACTLY 2-3 short sentences. Nothing more.\n"
+                    "RULES (zero exceptions):\n"
+                    "1. Never mention any phone number, URL, email, website, or portal name — "
+                    "not even well-known ones — unless it is word-for-word in the verified context given.\n"
+                    "2. Never suggest 'visit the website' or give step-by-step instructions naming "
+                    "specific agencies/portals not explicitly given to you.\n"
+                    "3. Only give brief emotional support + one safety tip (e.g. preserve evidence, "
+                    "don't share OTPs). The resource cards below already show contact details.\n"
+                    "4. Use markdown formatting: **bold** for key terms, bullet points if listing tips.\n"
+                    f"5. Respond in {user_lang}, regardless of what language the query was in."
                 )},
                 {"role": "user", "content": f"User asked: {query_text}{context_notes}"},
             ],
-            temperature=0.3,
+            temperature=0,
             timeout=5,
         )
         return resp.choices[0].message.content.strip()

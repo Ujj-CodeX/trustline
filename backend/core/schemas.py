@@ -14,4 +14,5 @@ class IntentSchema(BaseModel):
     state: Optional[str] = None
     district: Optional[str] = None
     country: str
+    language: Optional[str] = "English"
 

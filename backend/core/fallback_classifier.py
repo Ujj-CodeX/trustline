@@ -12,10 +12,8 @@ KEYWORD_MAP = {
 
 def keyword_fallback_classify(query_text):
     text = query_text.lower()
-
     for category, keywords in KEYWORD_MAP.items():
         if any(kw in text for kw in keywords):
-            return {"category": category, "urgency_tier": "urgent", "state": None, "district": None, "country": "India"}
-
-    return {"category": "general", "urgency_tier": "general", "state": None, "district": None, "country": "India"}
+            return {"category": category, "urgency_tier": "urgent", "state": None, "district": None, "country": "", "language": "English"}
+    return {"category": "general", "urgency_tier": "general", "state": None, "district": None, "country": "", "language": "English"}
 
