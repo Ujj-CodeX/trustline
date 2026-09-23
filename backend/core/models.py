@@ -10,6 +10,13 @@ class Helpline(models.Model):
     ('women_safety', 'Women Safety'),
     ('legal_aid', 'Legal Aid'),
     ('health_emergency', 'Health Emergency'),
+    ('animal_husbandry', 'Animal Husbandry'),
+    ('senior_citizen', 'Senior Citizen Support'),
+    ('disaster_relief', 'Disaster Relief'),
+    ('labour_rights', 'Labour Rights'),
+    ('consumer_complaint', 'Consumer Complaint'),
+    ('road_accident', 'Road Accident'),
+    ('missing_person', 'Missing Person'),
     ('general', 'General Emergency'),
 ]
 

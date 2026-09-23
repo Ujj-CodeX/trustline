@@ -6,7 +6,12 @@ KEYWORD_MAP = {
     "mental_health": ["suicide", "suicidal", "depression", "anxiety", "self harm"],
     "legal_aid": ["legal help", "lawyer", "court", "rights"],
     "animal_husbandry": ["animal", "cattle", "livestock", "pet injured"],
-    "health_emergency": ["medical emergency", "injury", "accident", "ambulance", "hospital"],
+    "senior_citizen": ["elderly", "elder abuse", "senior citizen"],
+    "disaster_relief": ["flood", "earthquake", "fire disaster", "evacuation"],
+    "labour_rights": ["wage", "workplace dispute", "labour exploitation"],
+    "consumer_complaint": ["consumer complaint", "product fraud", "service fraud"],
+    "road_accident": ["road accident", "car crash", "traffic accident"],
+    "missing_person": ["missing person", "kidnapped", "not found"],
 }
 
 

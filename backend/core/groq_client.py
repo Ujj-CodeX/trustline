@@ -17,7 +17,7 @@ client = Groq(api_key=config('GROQ_API_KEY'))
 
 
 SYSTEM_PROMPT = """You are an intent extractor. Return ONLY valid JSON, no extra text.
-Schema: {"category": one of [cyber_crime, domestic_violence, mental_health, child_helpline, women_safety, legal_aid, health_emergency, animal_husbandry, general],
+Schema: {"category": one of [cyber_crime, domestic_violence, mental_health, child_helpline, women_safety, legal_aid, health_emergency, animal_husbandry, senior_citizen, disaster_relief, labour_rights, consumer_complaint, road_accident, missing_person, general],
 "urgency_tier": one of [emergency, urgent, general],
 "state": string or null, "district": string or null, "country": string or empty string if not mentioned,
 "language": the language the user wrote their query in, e.g. "English", "Hindi", "Tamil"}
@@ -33,7 +33,7 @@ Query: "cyber fraud happened to my friend in Lucknow"
 Output: {"category": "cyber_crime", "urgency_tier": "urgent", "state": "Uttar Pradesh", "district": "Lucknow", "country": "India", "language": "English"}
 
 Query: "mujhe madad chahiye, mera paisa cheat ho gaya"
-Output: {"category": "cyber_crime", "urgency_tier": "urgent", "state": null, "district": null, "country": "", "language": "Hindi"}
+Output: {"category": "cyber_crime", "urgency_tier": "urgent", "state": "Uttar Pradesh", "district": "Lucknow", "country": "India", "language": "English"}
 """
 
 
