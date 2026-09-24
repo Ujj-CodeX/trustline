@@ -846,15 +846,12 @@ export default function Page({
         {/* =========================================================================
             SECTION 5: "FIND SUPPORT FOR WHAT MATTERS" 6-CARD CATEGORY GRID
             ========================================================================= */}
-               <section
-  ref={categoriesReveal.ref as any}
-  className={`w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 transition-all duration-700 ${statsReveal.isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
->
+        <section ref={categoriesReveal.ref as any} className={`w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 sm:space-y-10 transition-all duration-700 ${statsReveal.isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
           <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
             Find support for what matters
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-6 gap-4 sm:gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-6 gap-6 sm:gap-8">
             {/* Large card - Mental Health (spans 3 cols) */}
             <button onClick={() => handleSearchSubmit(categoryCards[0].query)} className="group md:col-span-3 flex items-center justify-between p-6 rounded-2xl bg-sky-50 dark:bg-sky-950/30 border border-sky-100 dark:border-sky-900/50 hover:shadow-lg hover:-translate-y-1 transition-all text-left cursor-pointer">
               <div className="flex items-center gap-4">

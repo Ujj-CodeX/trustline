@@ -10,101 +10,7 @@ from .global_client import get_global_resources
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.throttling import AnonRateThrottle
 from django.utils.text import slugify
-
-
-
-
-NATIONAL_FALLBACK = {
-
-    "India": {
-        "cyber_crime": [{"name": "National Cyber Crime Helpline", "phone": "1930"}],
-        "mental_health": [{"name": "Tele-MANAS", "phone": "14416"}],
-        "child_helpline": [{"name": "Child Helpline", "phone": "1098"}],
-        "women_safety": [{"name": "Women Helpline", "phone": "181"}],
-        "domestic_violence": [{"name": "Women Helpline", "phone": "181"}],
-        "legal_aid": [{"name": "NALSA Legal Services", "phone": "15100"}],
-        "senior_citizen": [{"name": "Elder Line", "phone": "14567"}],
-        "disaster_relief": [{"name": "Disaster Management", "phone": "1078"}],
-        "consumer_complaint": [{"name": "National Consumer Helpline", "phone": "1915"}],
-        "road_accident": [{"name": "National Emergency", "phone": "112"}],
-        "missing_person": [{"name": "Police Emergency", "phone": "112"}],
-        "default": [{"name": "National Emergency", "phone": "112"}],
-    },
-
-    "United States": {
-        "default": [{"name": "Emergency Services", "phone": "911"}]
-    },
-
-    "Canada": {
-        "default": [{"name": "Emergency Services", "phone": "911"}]
-    },
-
-    "United Kingdom": {
-        "default": [{"name": "Emergency Services", "phone": "999"}]
-    },
-
-    "Australia": {
-        "default": [{"name": "Emergency Services", "phone": "000"}]
-    },
-
-    "Germany": {
-        "default": [{"name": "Emergency Services", "phone": "112"}]
-    },
-
-    "France": {
-        "default": [{"name": "Emergency Services", "phone": "112"}]
-    },
-
-    "Spain": {
-        "default": [{"name": "Emergency Services", "phone": "112"}]
-    },
-
-    "Italy": {
-        "default": [{"name": "Emergency Services", "phone": "112"}]
-    },
-
-    "Netherlands": {
-        "default": [{"name": "Emergency Services", "phone": "112"}]
-    },
-
-    "Belgium": {
-        "default": [{"name": "Emergency Services", "phone": "112"}]
-    },
-
-    "Japan": {
-        "default": [{"name": "Police", "phone": "110"}]
-    },
-
-    "South Korea": {
-        "default": [{"name": "Emergency Services", "phone": "119"}]
-    },
-
-    "Singapore": {
-        "default": [{"name": "Emergency Services", "phone": "999"}]
-    },
-
-    "Brazil": {
-        "default": [{"name": "Police Emergency", "phone": "190"}]
-    },
-
-    "South Africa": {
-        "default": [{"name": "Emergency Services", "phone": "112"}]
-    },
-
-    "default": {
-        "default": [{
-            "name": "General Guidance",
-            "phone": None,
-            "note": "Please contact your local emergency services."
-        }]
-    }
-}
-
-def get_fallback(country, category):
-    if country == "India":
-        return NATIONAL_FALLBACK["India"].get(category, NATIONAL_FALLBACK["India"]["default"])
-    return NATIONAL_FALLBACK.get(country, NATIONAL_FALLBACK.get("default", [{"name": "General Guidance", "phone": None}]))
-
+from .fallbacks import get_fallback
 
 
 
@@ -150,7 +56,7 @@ class ChatQueryView(APIView):
 
         if not helplines:
             helplines = get_fallback(extracted["country"], extracted["category"])
-            reply = "Verified local resource nahi mila is category ke liye. Neeche diya emergency number try karein."
+            reply = format_response(query_text,helplines, extracted.get("language", "English"))
         else:
             reply = format_response(query_text, helplines, extracted.get('language', 'English'))
 
@@ -220,11 +126,7 @@ class ChatQueryView(APIView):
         results.sort(key=sort_key)
         return HelplineSerializer(results[:5], many=True).data
 
-    def _lookup_global(self, extracted):
-        data = get_global_resources(extracted["country"], extracted["category"])
-        verification_rank = {"verified_authority": 0, "verified_web": 1, "cross_referenced": 2, "legacy_unverified": 3}
-        data.sort(key=lambda r: verification_rank.get(r.get("verification_status"), 4))
-        return data
+    
 
     def _lookup_global(self, extracted):
         data = get_global_resources(extracted["country"],extracted["category"])
