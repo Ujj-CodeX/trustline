@@ -8,24 +8,52 @@ CATEGORIES = [
 ]
 
 CATEGORY_DESCRIPTIONS = {
-    "cyber_crime": "online fraud, hacking, scam, phishing, financial cyber crime",
-    "domestic_violence": "abuse at home, violence by partner or family",
-    "mental_health": "depression, anxiety, suicide, emotional crisis, counseling",
-    "child_helpline": "child abuse, missing child, child safety",
-    "women_safety": "harassment, stalking, women's safety, gender violence",
-    "legal_aid": "legal help, lawyer, court, consumer rights",
-    "health_emergency": "medical emergency, injury, accident, ambulance",
-    "animal_husbandry": "animal, cattle, livestock, pet injured",
-    "senior_citizen": "elderly abuse, elder care, senior citizen support",
-    "disaster_relief": "flood, fire, earthquake, natural disaster, evacuation",
-    "labour_rights": "workplace dispute, wage issue, labour exploitation",
-    "consumer_complaint": "product complaint, service fraud, consumer rights",
-    "road_accident": "road accident, traffic collision, vehicle emergency",
-    "missing_person": "missing adult, person not found, kidnapping",
-    "general": "general emergency, unspecified help",
+    "cyber_crime": 
+       "online fraud, cyber fraud, hacking, hacked account, phishing, scam, OTP fraud, UPI fraud, banking fraud, investment scam, sextortion, blackmail, identity theft, digital arrest, fake website, fake call, social media hack, cyber bullying, financial cyber crime",
+    "domestic_violence":
+       "domestic violence, family abuse, abuse at home, husband beating wife, wife abuse, marital abuse, physical violence, emotional abuse, family harassment, dowry harassment, forced marriage, intimate partner violence",
+    "mental_health": 
+       "depression, anxiety, panic attack, emotional crisis, suicidal thoughts, self harm, loneliness, hopelessness, counseling, mental stress, overthinking, trauma, emotional support, mental wellbeing, psychological help",
+    "child_helpline": 
+        "child abuse, child neglect, missing child, child labour, child trafficking, child marriage, child exploitation, child safety, orphan child, child protection",
+    "women_safety": 
+       "women safety, harassment, sexual harassment, stalking, molestation, gender violence, workplace harassment, eve teasing, unsafe environment, abuse against women, rape threat",
+    "legal_aid":
+       "legal help, lawyer, court case, legal advice, rights violation, legal aid services, property dispute, consumer court, legal representation, legal consultation",
+    "health_emergency":
+       "medical emergency, ambulance, serious injury, accident, unconscious person, heart attack, stroke, severe bleeding, emergency treatment, urgent healthcare",
+    "animal_husbandry":
+        "animal husbandry, livestock support, cattle care, cow health, buffalo health, goat farming, poultry farming, veterinary support, animal disease, pet injury, dairy farming",
+    "senior_citizen": 
+       "senior citizen support, elderly abuse, elder care, old age assistance, aging parent support, pensioner help, elder neglect, elderly welfare",
+    "disaster_relief": 
+      "flood, earthquake, cyclone, landslide, tsunami, natural disaster, fire disaster, evacuation support, disaster response, emergency shelter",
+    "labour_rights": 
+       "labour rights, workplace dispute, salary not paid, wage issue, labour exploitation, worker rights, employer abuse, contract violation, unfair dismissal",
+    "consumer_complaint": 
+      "consumer complaint, defective product, service complaint, refund issue, fake product, seller fraud, consumer rights violation, poor service, warranty dispute",
+    "road_accident": 
+      "road accident, traffic accident, car crash, bike accident, vehicle collision, hit and run, highway accident, emergency roadside assistance",
+    "missing_person": 
+      "missing person, missing adult, kidnapped person, person disappeared, person not found, runaway individual, tracing missing individual",
+    "general":
+       "general help, emergency assistance, support services, public helpline, civic assistance, unspecified problem"
 }
 
 _model = None
+CATEGORY_EMBEDDINGS = None
+
+def get_category_embeddings():
+    global CATEGORY_EMBEDDINGS
+
+    if CATEGORY_EMBEDDINGS is None:
+        model = get_model()
+        CATEGORY_EMBEDDINGS = model.encode(
+            list(CATEGORY_DESCRIPTIONS.values()),
+            convert_to_tensor=True
+        )
+
+    return CATEGORY_EMBEDDINGS
 
 def get_model():
     global _model
@@ -37,7 +65,7 @@ def classify_intent(query_text):
     model = get_model()
     query_emb = model.encode(query_text, convert_to_tensor=True)
     cat_texts = list(CATEGORY_DESCRIPTIONS.values())
-    cat_embs = model.encode(cat_texts, convert_to_tensor=True)
+    cat_embs =get_category_embeddings()
 
     scores = util.cos_sim(query_emb, cat_embs)[0]
     best_idx = scores.argmax().item()
