@@ -14,12 +14,15 @@ import { ResourceCard } from "@/components/ResourceCard";
 import { fetchChatResponse } from "@/lib/api";
 import { Message, ResourceItem, ExtractedIntent, CountryOption, UrgencyTier } from "@/types";
 
+import { ChevronDown } from "lucide-react";
+
 interface ChatPageProps {
   initialQuery?: string;
   selectedCountry: string;
   resumeFromStorage?: boolean;
   onNavigate: (path: string) => void;
   countries: CountryOption[];
+
 }
 
 export const ChatPage: React.FC<ChatPageProps> = ({
@@ -27,7 +30,10 @@ export const ChatPage: React.FC<ChatPageProps> = ({
   selectedCountry,
   resumeFromStorage = false,
   onNavigate,
+  countries,
 }) => {
+  const [localCountry, setLocalCountry] = useState(selectedCountry);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputQuery, setInputQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -63,9 +69,9 @@ export const ChatPage: React.FC<ChatPageProps> = ({
 
   if (!hasLocationInQuery(queryText)) {
     console.log("[DEBUG] No location in query. selectedCountry =", JSON.stringify(selectedCountry));
-    if (selectedCountry) {
-      console.log("[DEBUG] Using dropdown:", selectedCountry);
-      countryToSend = selectedCountry;
+    if (localCountry) {
+      console.log("[DEBUG] Using dropdown:", localCountry);
+      countryToSend = localCountry;
     } else {
       console.log("[DEBUG] Triggering geolocation...");
       geoLocation = await getGeoLocation();
@@ -212,9 +218,33 @@ const getGeoLocation = async (): Promise<{ country: string; state: string; distr
         </button>
 
         <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-            Selected Region: <strong className="text-slate-800 dark:text-slate-200">{selectedCountry}</strong>
-          </span>
+          <div className="relative">
+  <button
+    type="button"
+    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+    className="h-9 px-3 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5"
+  >
+    {localCountry || "Select Country"}
+    <ChevronDown className="w-3.5 h-3.5" />
+  </button>
+  {isDropdownOpen && (
+    <>
+      <div className="fixed inset-0 z-40" onClick={() => setIsDropdownOpen(false)} />
+      <div className="absolute right-0 top-full mt-2 w-44 max-h-60 overflow-y-auto bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-200 dark:border-slate-800 p-1 z-50">
+        {countries.map((c) => (
+          <button
+            key={c.code}
+            type="button"
+            onClick={() => { setLocalCountry(c.name); setIsDropdownOpen(false); }}
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-left hover:bg-slate-100 dark:hover:bg-slate-800"
+          >
+            <span>{c.flag}</span><span>{c.name}</span>
+          </button>
+        ))}
+      </div>
+    </>
+  )}
+</div>
           <button
             type="button"
             onClick={() => {
@@ -249,14 +279,14 @@ const getGeoLocation = async (): Promise<{ country: string; state: string; distr
         {/* Chat Header */}
         <div className="p-4 sm:p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between gap-4 bg-slate-50/50 dark:bg-slate-950/30">
           <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-xl bg-teal-50 dark:bg-teal-950/60 border border-teal-100 dark:border-teal-800/60 flex items-center justify-center text-teal-700 dark:text-teal-400 shrink-0">
-              <ShieldCheck className="w-7 h-7 text-teal-600 dark:text-teal-400" />
+            <div className="w-12 h-12 rounded-xl bg-cyan-50 dark:bg-cyan-950/60 border border-cyan-100 dark:border-cyan-800/60 flex items-center justify-center text-cyan-700 dark:text-cyan-400 shrink-0">
+                 <ShieldCheck className="w-7 h-7 text-cyan-600 dark:text-cyan-400" />
             </div>
             <div>
-              <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white leading-tight">
+              <h2 className="text-base sm:text-lg font-bold text-cyan-700 dark:text-cyan-400 leading-tight">
                 Chat with TrustLine
               </h2>
-              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+              <p className="text-xs sm:text-sm text-cyan-600 dark:text-cyan-300 mt-0.5">
                 Ask anything. Get verified helplines and support resources — instantly.
               </p>
             </div>
@@ -314,9 +344,9 @@ const getGeoLocation = async (): Promise<{ country: string; state: string; distr
           )}
 
           {/* Important Guidance Tip Box */}
-          <div className="bg-sky-50/70 dark:bg-sky-950/20 rounded-xl p-4 sm:p-5 border border-sky-100 dark:border-sky-900/40">
-            <div className="flex items-center gap-2 text-sky-900 dark:text-sky-300 font-bold text-sm mb-2.5">
-              <Lightbulb className="w-4 h-4 text-sky-600 dark:text-sky-400" />
+          <div className="bg-cyan-50/70 dark:bg-cyan-950/20 rounded-xl p-4 sm:p-5 border border-cyan-100 dark:border-cyan-900/40">
+             <div className="flex items-center gap-2 text-cyan-900 dark:text-cyan-300 font-bold text-sm mb-2.5">
+                 <Lightbulb className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
               <span>Important Guidance</span>
             </div>
 
@@ -359,14 +389,13 @@ const getGeoLocation = async (): Promise<{ country: string; state: string; distr
               onChange={(e) => setInputQuery(e.target.value)}
               disabled={isLoading}
               placeholder="Ask anything or describe what you need help with..."
-              className="flex-1 h-12 px-4 rounded-xl bg-slate-100 dark:bg-slate-800/80 text-slate-900 dark:text-white placeholder-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/50"
-            />
+              className="flex-1 h-12 px-4 rounded-xl bg-cyan-50 dark:bg-slate-800 border border-cyan-200 dark:border-cyan-800 text-slate-900 dark:text-white placeholder-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"/>
 
             <button
               id="chat-send-btn"
               type="submit"
               disabled={isLoading || !inputQuery.trim()}
-              className="w-12 h-12 rounded-xl bg-teal-700 hover:bg-teal-800 disabled:opacity-50 text-white flex items-center justify-center transition-all cursor-pointer shadow-sm active:scale-95 shrink-0"
+              className="w-12 h-12 rounded-xl bg-cyan-700 hover:bg-cyan-800 disabled:opacity-50 text-white flex items-center justify-center transition-all cursor-pointer shadow-sm active:scale-95 shrink-0"
               title="Send message"
             >
               <Send className="w-5 h-5" />

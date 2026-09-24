@@ -1,6 +1,7 @@
 "use client";
 import { useSearchParams } from "next/navigation";
 import { ChatPage } from "@/screens/ChatPage";
+import { DEFAULT_COUNTRIES } from "@/lib/countries";
 
 export default function Page() {
   const searchParams = useSearchParams();
@@ -15,14 +16,7 @@ export default function Page() {
       resumeFromStorage={resume}
       
       onNavigate={(path) => { window.location.href = path; }}
-      countries={[
-        { code: "IN", name: "India", flag: "🇮🇳" },
-        { code: "US", name: "United States", flag: "🇺🇸" },
-        { code: "GB", name: "United Kingdom", flag: "🇬🇧" },
-        { code: "CA", name: "Canada", flag: "🇨🇦" },
-        { code: "AU", name: "Australia", flag: "🇦🇺" },
-        { code: "DE", name: "Germany", flag: "🇩🇪" },
-      ]}
+      countries={DEFAULT_COUNTRIES}
     />
   );
 }

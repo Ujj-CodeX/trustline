@@ -29,24 +29,15 @@ import {
   MapPin,
 } from "lucide-react";
 
+import { DEFAULT_COUNTRIES } from "@/lib/countries";
+
 interface CountryItem {
   code: string;
   name: string;
   flag: string;
 }
 
-const DEFAULT_COUNTRIES: CountryItem[] = [
-  { code: "IN", name: "India", flag: "🇮🇳" },
-  { code: "US", name: "United States", flag: "🇺🇸" },
-  { code: "GB", name: "United Kingdom", flag: "🇬🇧" },
-  { code: "CA", name: "Canada", flag: "🇨🇦" },
-  { code: "AU", name: "Australia", flag: "🇦🇺" },
-  { code: "DE", name: "Germany", flag: "🇩🇪" },
-  { code: "FR", name: "France", flag: "🇫🇷" },
-  { code: "JP", name: "Japan", flag: "🇯🇵" },
-  { code: "BR", name: "Brazil", flag: "🇧🇷" },
-  { code: "ZA", name: "South Africa", flag: "🇿🇦" },
-];
+
 
 interface PageProps {
   onNavigateToChat?: (initialQuery?: string, country?: string) => void;
