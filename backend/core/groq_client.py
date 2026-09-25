@@ -32,11 +32,15 @@ Output: {"urgency_tier": "urgent", "state": "Uttar Pradesh", "district": "Luckno
 
 
 def classify_query(query_text):
-    if not check_outbound_limit():
-        return {"category": "general", "urgency_tier": "general", "state": None, "district": None, "country": "",
-                "warning": "Rate limit reached — showing general fallback."}
+
 
     intent_result = classify_intent(query_text)
+
+    if not check_outbound_limit():
+        return {"category": intent_result["category"], "confidence": intent_result["confidence"],
+                "urgency_tier": "general", "state": None, "district": None, "country": "",
+                "warning": "Rate limit reached — location extraction skipped."}
+    
 
     try:
         resp = client.chat.completions.create(
@@ -59,8 +63,9 @@ def classify_query(query_text):
         return result
 
     except (json.JSONDecodeError, ValidationError):
+        fallback = keyword_fallback_classify(query_text)
         return {"category": intent_result["category"], "confidence": intent_result["confidence"],
-                "urgency_tier": "general", "state": None, "district": None, "country": ""}
+            "urgency_tier": fallback["urgency_tier"], "state": None, "district": None, "country": ""}
     except Exception:
         data = keyword_fallback_classify(query_text)
         data["category"] = intent_result["category"]
@@ -74,9 +79,11 @@ def classify_query(query_text):
 def format_response(query_text,resources=None, user_lang="English"):
     """Generate only natural-language guidance.
 
-    Resource facts such as phone numbers, names, verification status, and URLs
-    are intentionally NOT passed to the LLM. They are returned separately by
-    the backend from the trusted resource store. """
+    Resource facts such as phone numbers, names, and URLs are intentionally
+    NOT passed to the LLM — those come from the backend's trusted store.
+    Resource descriptions (admin-curated context) ARE passed as reference,
+    but the LLM is instructed not to invent facts beyond what's given.
+    """
 
     context_notes = ""
 

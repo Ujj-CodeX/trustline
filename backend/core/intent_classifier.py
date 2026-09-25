@@ -65,15 +65,29 @@ def classify_intent(query_text):
     model = get_model()
     query_emb = model.encode(query_text, convert_to_tensor=True)
     cat_texts = list(CATEGORY_DESCRIPTIONS.values())
-    cat_embs =get_category_embeddings()
+    cat_embs = model.encode(cat_texts, convert_to_tensor=True)
 
     scores = util.cos_sim(query_emb, cat_embs)[0]
-    best_idx = scores.argmax().item()
-    confidence = round(scores[best_idx].item(),2)
+    sorted_indices = scores.argsort(descending=True)
 
-    return {
-        "category": CATEGORIES[best_idx],
-        "confidence": confidence,
-    }
+
+    top_idx = sorted_indices[0].item()
+    second_idx = sorted_indices[1].item()
+
+
+    top_score = round(scores[top_idx].item(), 2)
+    margin = round(top_score - scores[second_idx].item(), 2)
+
+    MIN_CONFIDENCE = 0.35
+    MIN_MARGIN = 0.05
+
+    if top_score < MIN_CONFIDENCE or margin < MIN_MARGIN:
+        return {"category": "general", "confidence": top_score, "ambiguous": True}
+
+    return {"category": CATEGORIES[top_idx], "confidence": top_score, "ambiguous": False}
+
+
+
+
 
 
