@@ -23,6 +23,16 @@ def generate_slug(category, country, state, district):
         base = slugify("-".join(parts))
         return base
 
+def resolve_resources(extracted):
+    if extracted["country"].lower() == "india":
+        helplines = ChatQueryView()._lookup_india(extracted)
+    else:
+        helplines = ChatQueryView()._lookup_global(extracted)
+    if not helplines:
+        helplines = get_fallback(extracted["country"],extracted["category"])
+    return helplines
+
+
 class ChatQueryView(APIView):
 
     throttle_classes = [AnonRateThrottle]
@@ -76,26 +86,17 @@ class ChatQueryView(APIView):
         )
 
         existing = ChatSession.objects.filter(slug=slug_base).first()
-        if existing:
-            session_slug = existing.slug
-        else:
-            slug_candidate = slug_base
-            counter = 1
-            while ChatSession.objects.filter(slug=slug_candidate).exists():
-                slug_candidate = f"{slug_base}-{counter}"
-                counter += 1
+
+        if not existing:
             ChatSession.objects.create(
-                slug=slug_candidate,
-                query_text=query_text,
+                slug=slug_base,
                 category=extracted.get('category', ''),
-                urgency_tier=extracted.get('urgency_tier', ''),
                 country=extracted.get('country', ''),
                 state=extracted.get('state'),
                 district=extracted.get('district'),
-                resources=helplines,
-                reply=reply,
+
             )
-            session_slug = slug_candidate
+        session_slug = slug_base
 
         return Response({
             "query_text": query_text,
@@ -104,6 +105,8 @@ class ChatQueryView(APIView):
             "reply": reply,
             "slug": session_slug,
         })
+
+    
 
     def _lookup_india(self, extracted):
         category = extracted["category"]
@@ -168,16 +171,15 @@ class ChatSessionDetailView(APIView):
         session = ChatSession.objects.filter(slug=slug).first()
         if not session:
             return Response({"error": "Not found"}, status=404)
-        return Response({
-            "query_text": session.query_text,
-            "extracted": {
-                "category": session.category,
-                "urgency_tier": session.urgency_tier,
-                "state": session.state,
-                "district": session.district,
-                "country": session.country,
-            },
-            "resources": session.resources,
-            "reply": session.reply,
 
-        })
+        extracted = {
+            "category": session.category, "country": session.country,
+            "state": session.state, "district": session.district,
+            "urgency_tier": "general", "language": "English",
+
+        }
+
+        helplines = resolve_resources(extracted)
+        query_hint = f"{session.category.replace('_',' ')} help in {session.district or session.state or session.country}"
+        reply = format_response(query_hint, helplines, "English" )
+        return Response({"query_text": query_hint, "extracted": extracted, "resources": helplines, "reply": reply})
