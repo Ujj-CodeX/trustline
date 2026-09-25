@@ -62,10 +62,12 @@ def get_model():
     return _model
 
 def classify_intent(query_text):
+
     model = get_model()
     query_emb = model.encode(query_text, convert_to_tensor=True)
-    cat_texts = list(CATEGORY_DESCRIPTIONS.values())
-    cat_embs = model.encode(cat_texts, convert_to_tensor=True)
+    
+
+    cat_embs = get_category_embeddings()
 
     scores = util.cos_sim(query_emb, cat_embs)[0]
     sorted_indices = scores.argsort(descending=True)
@@ -76,7 +78,10 @@ def classify_intent(query_text):
 
 
     top_score = round(scores[top_idx].item(), 2)
-    margin = round(top_score - scores[second_idx].item(), 2)
+    margin = round(
+        scores[top_idx].item() - scores[second_idx].item(),
+        2
+    )
 
     MIN_CONFIDENCE = 0.35
     MIN_MARGIN = 0.05
