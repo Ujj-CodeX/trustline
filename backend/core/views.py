@@ -183,3 +183,10 @@ class ChatSessionDetailView(APIView):
         query_hint = f"{session.category.replace('_',' ')} help in {session.district or session.state or session.country}"
         reply = format_response(query_hint, helplines, "English" )
         return Response({"query_text": query_hint, "extracted": extracted, "resources": helplines, "reply": reply})
+
+
+class SitemapDataView(APIView):
+    def get(self, request):
+        sessions = ChatSession.objects.all().values('slug', 'created_at')
+        return Response(list(sessions))
+    
