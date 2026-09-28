@@ -11,27 +11,82 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.throttling import AnonRateThrottle
 from django.utils.text import slugify
 from .fallbacks import get_fallback
+
+
+from copy import deepcopy
 from .translator import translate_text
 
-
+TRANSLATABLE_FIELDS = [
+    "name",
+    "organization",
+    "notes",
+    "target",
+]
 
 def localize_resources(resources, user_lang):
-    if user_lang == "English":
+
+    print("\n" + "=" * 80)
+    print("LOCALIZATION START")
+    print("USER LANGUAGE:", user_lang)
+    print("RESOURCE COUNT:", len(resources) if resources else 0)
+    print("=" * 80)
+
+    if not resources:
+        print("NO RESOURCES FOUND")
+        return []
+
+    if not user_lang:
+        print("NO LANGUAGE PROVIDED")
         return resources
-    for r in resources:
-        if r.get("name"):
-            r["name"] = translate_text(r["name"], user_lang)
-        if r.get("description"):
-            r["description"] = translate_text(r["description"], user_lang)
-    return resources
 
+    if user_lang == "English":
+        print("ENGLISH DETECTED -> SKIPPING TRANSLATION")
+        return resources
 
+    localized_resources = deepcopy(resources)
 
+    for idx, resource in enumerate(localized_resources):
 
+        print("\n" + "-" * 50)
+        print(f"RESOURCE #{idx + 1}")
+        print("-" * 50)
 
-    
+        for field in TRANSLATABLE_FIELDS:
 
+            value = resource.get(field)
 
+            if not isinstance(value, str):
+                continue
+
+            if not value.strip():
+                continue
+
+            print(f"\nFIELD: {field}")
+            print("BEFORE:", value)
+
+            try:
+
+                translated = translate_text(
+                    value,
+                    user_lang
+                )
+
+                print("AFTER :", translated)
+
+                resource[field] = translated
+
+            except Exception as e:
+
+                print(
+                    f"[LOCALIZATION ERROR] "
+                    f"{field}: {e}"
+                )
+
+    print("\n" + "=" * 80)
+    print("LOCALIZATION COMPLETE")
+    print("=" * 80)
+
+    return localized_resources
 
 
 

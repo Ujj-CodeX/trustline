@@ -155,11 +155,11 @@ export const ChatPage: React.FC<ChatPageProps> = ({
   const otherResources = currentResources.length > 1 ? currentResources.slice(1) : [];
 
   const guidanceTips = [
-    "Keep all evidence (screenshots, transaction details, reference IDs, emails).",
-    "Do not share OTPs, passwords or personal PINs with anyone claiming to help.",
-    "You can also report in person at your nearest local police station or district cyber cell.",
-    "If money has been deducted, contact your bank immediately to freeze the transaction.",
-  ];
+  "Keep relevant information or records safe for future reference.",
+  "Avoid sharing sensitive personal details unnecessarily.",
+  "Use verified support services whenever possible.",
+  "Seek immediate local assistance if the situation becomes urgent or unsafe."
+];
 
 
   const hasLocationInQuery = (text: string): boolean => {

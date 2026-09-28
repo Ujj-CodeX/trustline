@@ -11,10 +11,11 @@ RAW_URL = "https://raw.githubusercontent.com/craigrallen/world-emergency-hotline
 
 CATEGORY_MAP = {
     "emergency": "general",
+    "health_emergency": "health_emergency",
+    "mental_health": "mental_health",
+    "suicide_crisis": "mental_health",
     "domestic_violence": "domestic_violence",
     "child_protection": "child_helpline",
-    "suicide_crisis": "mental_health",
-    "mental_health": "mental_health",
     "sexual_violence": "women_safety",
     "legal_aid": "legal_aid",
 }
