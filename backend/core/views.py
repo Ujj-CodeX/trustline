@@ -11,6 +11,29 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.throttling import AnonRateThrottle
 from django.utils.text import slugify
 from .fallbacks import get_fallback
+from .translator import translate_text
+
+
+
+def localize_resources(resources, user_lang):
+    if user_lang == "English":
+        return resources
+    for r in resources:
+        if r.get("name"):
+            r["name"] = translate_text(r["name"], user_lang)
+        if r.get("description"):
+            r["description"] = translate_text(r["description"], user_lang)
+    return resources
+
+
+
+
+
+    
+
+
+
+
 
 
 
@@ -42,11 +65,19 @@ class ChatQueryView(APIView):
         query_text = request.data.get("query")
         dropdown_country = request.data.get('dropdown_country')
         geo_location = request.data.get('geo_location')
-
+        
+        
         if not query_text:
             return Response({"error": "query is required"}, status=status.HTTP_400_BAD_REQUEST)
 
         extracted = classify_query(query_text)
+
+        print("\n" + "=" * 80)
+        print("QUERY:", query_text)
+        print("EXTRACTED:", extracted)
+        print("=" * 80)
+
+        
 
         if not extracted.get('country'):
             if dropdown_country:
@@ -57,6 +88,10 @@ class ChatQueryView(APIView):
                 extracted['district'] = extracted.get('district') or geo_location.get('district')
             else:
                 extracted['country'] = 'India'
+        print("FINAL COUNTRY:", extracted.get("country"))
+        print("FINAL STATE:", extracted.get("state"))
+        print("FINAL DISTRICT:", extracted.get("district"))
+        print("LANGUAGE:", extracted.get("language"))
 
         # FIX: India lookup ALWAYS runs — never skipped for missing location
         if extracted["country"].lower() == "india":
@@ -64,11 +99,21 @@ class ChatQueryView(APIView):
         else:
             helplines = self._lookup_global(extracted)
 
+        print("RAW HELPLINES FOUND:", len(helplines))
+
         if not helplines:
-            helplines = get_fallback(extracted["country"], extracted["category"])
-            reply = format_response(query_text,helplines, extracted.get("language", "English"))
-        else:
-            reply = format_response(query_text, helplines, extracted.get('language', 'English'))
+           helplines = get_fallback(extracted["country"],extracted["category"]
+           )
+
+        # ALWAYS localize resource cards
+        helplines = localize_resources(helplines, extracted.get('language', 'English'))
+
+        # THEN generate formatted response
+        reply = format_response(query_text,helplines,extracted.get("language", "English"))
+
+        print("REPLY GENERATED:")
+        print(reply)
+
 
         QueryLog.objects.create(
             query_text=query_text,
