@@ -115,9 +115,10 @@ class ChatQueryView(APIView):
         print("RAW HELPLINES FOUND:", len(helplines))
 
         if not helplines:
-           helplines = get_fallback(extracted["country"],extracted["category"]
-           )
+            
+            helplines = get_fallback(extracted["country"],extracted["category"])
 
+            
         # ALWAYS localize resource cards
         helplines = localize_resources(helplines, extracted.get('language', 'English'))
 
@@ -167,6 +168,8 @@ class ChatQueryView(APIView):
     
 
     def _lookup_india(self, extracted):
+        
+
         category = extracted["category"]
         state = extracted.get("state")
         district = extracted.get("district")

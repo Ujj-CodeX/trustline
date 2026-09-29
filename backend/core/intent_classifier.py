@@ -80,25 +80,24 @@ def classify_intent(query_text):
     top_score = round(scores[top_idx].item(), 2)
     margin = round(top_score - scores[second_idx].item(), 2)
 
-    print(f"[DEBUG] Query: {query_text}")
-    print(f"[DEBUG] Top: {CATEGORIES[top_idx]} ({top_score}) | Second: {CATEGORIES[second_idx]} ({round(scores[second_idx].item(),2)}) | Margin: {margin}")
+    
 
     MIN_CONFIDENCE = 0.15
     MIN_MARGIN = 0.05
 
     if top_score < MIN_CONFIDENCE:
-        print(f"[DEBUG] Below MIN_CONFIDENCE ({MIN_CONFIDENCE}) -> general")
+        
         return {"category": "general", "confidence": top_score, "ambiguous": True}
 
     if margin < MIN_MARGIN:
         keyword_hit = keyword_fallback_classify(query_text)["category"]
         top_two = {CATEGORIES[top_idx], CATEGORIES[second_idx]}
-        print(f"[DEBUG] Margin below MIN_MARGIN. Keyword hit: {keyword_hit} | Top-2: {top_two}")
+        
         if keyword_hit in top_two:
-            print(f"[DEBUG] Using keyword tie-breaker -> {keyword_hit}")
+            
             return {"category": keyword_hit, "confidence": top_score, "ambiguous": False}
-        print(f"[DEBUG] Keyword not in top-2, keeping top semantic -> {CATEGORIES[top_idx]} (ambiguous)")
+        
         return {"category": CATEGORIES[top_idx], "confidence": top_score, "ambiguous": True}
 
-    print(f"[DEBUG] Clear winner -> {CATEGORIES[top_idx]}")
+    
     return {"category": CATEGORIES[top_idx], "confidence": top_score, "ambiguous": False}
