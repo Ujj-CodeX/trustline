@@ -18,27 +18,39 @@ def lang_to_code(language_name):
     if not language_name:
         return "en"
 
-    return LANGUAGE_MAP.get(language_name.strip(), "en")
+    return LANGUAGE_MAP.get(
+        language_name.strip(),
+        "en"
+    )
 
 
-def translate_text(text, target_lang_name):
+def translate_text(
+    text,
+    target_lang_name,
+    source_lang_name="English",
+):
     """
-    Translate English source text into the user's target language.
+    Translate text from source language to target language.
 
-    Official names, phone numbers, URLs, etc. should not be passed here.
+    Example:
+        translate_text("Emergency Services", "French", "English")
+        translate_text("Services d'urgence", "English", "French")
     """
-    if not text:
+
+    if not text or not text.strip():
         return text
 
+    source_code = lang_to_code(source_lang_name)
     target_code = lang_to_code(target_lang_name)
 
-    if target_code == "en":
+    # Same language -> no translation required
+    if source_code == target_code:
         return text
 
     try:
         translated = argostranslate.translate.translate(
             text,
-            "en",
+            source_code,
             target_code,
         )
 
@@ -47,6 +59,7 @@ def translate_text(text, target_lang_name):
     except Exception as e:
         print(
             f"[Argos Translation Error] "
+            f"{source_lang_name} ({source_code}) -> "
             f"{target_lang_name} ({target_code}): {e}"
         )
         return text

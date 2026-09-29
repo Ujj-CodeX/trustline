@@ -24,67 +24,25 @@ TRANSLATABLE_FIELDS = [
 ]
 
 def localize_resources(resources, user_lang):
-
-    print("\n" + "=" * 80)
-    print("LOCALIZATION START")
-    print("USER LANGUAGE:", user_lang)
-    print("RESOURCE COUNT:", len(resources) if resources else 0)
-    print("=" * 80)
-
     if not resources:
-        print("NO RESOURCES FOUND")
         return []
-
-    if not user_lang:
-        print("NO LANGUAGE PROVIDED")
-        return resources
-
-    if user_lang == "English":
-        print("ENGLISH DETECTED -> SKIPPING TRANSLATION")
-        return resources
 
     localized_resources = deepcopy(resources)
 
-    for idx, resource in enumerate(localized_resources):
-
-        print("\n" + "-" * 50)
-        print(f"RESOURCE #{idx + 1}")
-        print("-" * 50)
+    for resource in localized_resources:
+        source_lang = resource.get("source_language", "English")
 
         for field in TRANSLATABLE_FIELDS:
-
             value = resource.get(field)
 
-            if not isinstance(value, str):
+            if not isinstance(value, str) or not value.strip():
                 continue
 
-            if not value.strip():
-                continue
-
-            print(f"\nFIELD: {field}")
-            print("BEFORE:", value)
-
-            try:
-
-                translated = translate_text(
-                    value,
-                    user_lang
-                )
-
-                print("AFTER :", translated)
-
-                resource[field] = translated
-
-            except Exception as e:
-
-                print(
-                    f"[LOCALIZATION ERROR] "
-                    f"{field}: {e}"
-                )
-
-    print("\n" + "=" * 80)
-    print("LOCALIZATION COMPLETE")
-    print("=" * 80)
+            resource[field] = translate_text(
+                value,
+                target_lang_name=user_lang,
+                source_lang_name=source_lang,
+            )
 
     return localized_resources
 

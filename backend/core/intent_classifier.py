@@ -1,4 +1,5 @@
 from sentence_transformers import SentenceTransformer ,util
+from .fallback_classifier import keyword_fallback_classify
 
 CATEGORIES = [
     "cyber_crime", "domestic_violence", "mental_health", "child_helpline",
@@ -61,38 +62,43 @@ def get_model():
         _model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
     return _model
 
-def classify_intent(query_text):
 
+
+
+
+def classify_intent(query_text):
     model = get_model()
     query_emb = model.encode(query_text, convert_to_tensor=True)
-    
-
-    cat_embs = get_category_embeddings()
+    cat_texts = list(CATEGORY_DESCRIPTIONS.values())
+    cat_embs = model.encode(cat_texts, convert_to_tensor=True)
 
     scores = util.cos_sim(query_emb, cat_embs)[0]
     sorted_indices = scores.argsort(descending=True)
 
-
     top_idx = sorted_indices[0].item()
     second_idx = sorted_indices[1].item()
-
-
     top_score = round(scores[top_idx].item(), 2)
-    margin = round(
-        scores[top_idx].item() - scores[second_idx].item(),
-        2
-    )
+    margin = round(top_score - scores[second_idx].item(), 2)
 
-    MIN_CONFIDENCE = 0.35
+    print(f"[DEBUG] Query: {query_text}")
+    print(f"[DEBUG] Top: {CATEGORIES[top_idx]} ({top_score}) | Second: {CATEGORIES[second_idx]} ({round(scores[second_idx].item(),2)}) | Margin: {margin}")
+
+    MIN_CONFIDENCE = 0.15
     MIN_MARGIN = 0.05
 
-    if top_score < MIN_CONFIDENCE or margin < MIN_MARGIN:
+    if top_score < MIN_CONFIDENCE:
+        print(f"[DEBUG] Below MIN_CONFIDENCE ({MIN_CONFIDENCE}) -> general")
         return {"category": "general", "confidence": top_score, "ambiguous": True}
 
+    if margin < MIN_MARGIN:
+        keyword_hit = keyword_fallback_classify(query_text)["category"]
+        top_two = {CATEGORIES[top_idx], CATEGORIES[second_idx]}
+        print(f"[DEBUG] Margin below MIN_MARGIN. Keyword hit: {keyword_hit} | Top-2: {top_two}")
+        if keyword_hit in top_two:
+            print(f"[DEBUG] Using keyword tie-breaker -> {keyword_hit}")
+            return {"category": keyword_hit, "confidence": top_score, "ambiguous": False}
+        print(f"[DEBUG] Keyword not in top-2, keeping top semantic -> {CATEGORIES[top_idx]} (ambiguous)")
+        return {"category": CATEGORIES[top_idx], "confidence": top_score, "ambiguous": True}
+
+    print(f"[DEBUG] Clear winner -> {CATEGORIES[top_idx]}")
     return {"category": CATEGORIES[top_idx], "confidence": top_score, "ambiguous": False}
-
-
-
-
-
-
