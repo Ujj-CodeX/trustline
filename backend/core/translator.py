@@ -36,8 +36,8 @@ def google_lang_to_code(language_name):
 
     language_name = language_name.strip()
 
-    if language_name in GOOGLE_LANGUAGE_ALIASES:
-        return GOOGLE_LANGUAGE_ALIASES[language_name]
+    if len(language_name) in (2, 5):
+        return language_name
 
     try:
         language = pycountry.languages.lookup(language_name)
@@ -88,14 +88,18 @@ def google_lang_to_code(language_name):
     return common_map.get(normalized)
 
 def argos_lang_to_code(language_name):
-    
     if not language_name:
-        return "en"
+        return None
 
-    return ARGOS_LANGUAGE_MAP.get(
-        language_name.strip(),
-        "en"
-    )
+    language_name = language_name.strip()
+
+    if language_name in ARGOS_LANGUAGE_MAP:
+        return ARGOS_LANGUAGE_MAP[language_name]
+
+    if language_name in ARGOS_LANGUAGE_MAP.values():
+        return language_name
+
+    return None
 
 
 def google_translate_text(text, target_lang_name,source_lang_name=None,):
