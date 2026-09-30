@@ -256,7 +256,7 @@ class SitemapDataView(APIView):
 
 class TranslatedTextView(APIView):
     def post(self, request):
-        texts = requests.data.get("texts", [])
+        texts = request.data.get("texts", [])
         target_lang =  request.data.get("lang", "en")
 
         if not isinstance(texts, list):

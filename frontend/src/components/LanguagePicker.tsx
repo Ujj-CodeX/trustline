@@ -1,4 +1,4 @@
-"use-client";
+"use client";
 
 import { useLanguage } from "@/lib/LanguageContext";
 import { Languages } from "lucide-react";
@@ -39,5 +39,5 @@ export function LanguagePicker() {
 
 
     );
-    
+
 }
