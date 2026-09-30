@@ -12,7 +12,7 @@ from rest_framework.throttling import AnonRateThrottle
 from django.utils.text import slugify
 from .fallbacks import get_fallback
 
-
+import requests
 from copy import deepcopy
 from .translator import translate_text
 
@@ -251,3 +251,31 @@ class SitemapDataView(APIView):
         sessions = ChatSession.objects.all().values('slug', 'created_at')
         return Response(list(sessions))
     
+
+
+
+class TranslatedTextView(APIView):
+    def post(self, request):
+        texts = requests.data.get("texts", [])
+        target_lang =  request.data.get("lang", "en")
+
+        if not isinstance(texts, list):
+            return Response(
+                {"error": "texts must be a list"},
+                status=400
+            )
+        translated =[]
+
+        for text in texts:
+            translated.append(
+                translate_text(
+                    text,
+                    target_lang_name=target_lang,
+                    source_lang_name="English",
+                )
+            )
+
+        return Response({
+            "translated": translated
+        })
+

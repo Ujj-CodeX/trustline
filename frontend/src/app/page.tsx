@@ -1,5 +1,6 @@
 "use client";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
+import { useLanguage } from "@/lib/LanguageContext";
 import React, { useState, useEffect } from "react";
 import {
   ShieldCheck,
@@ -63,6 +64,20 @@ export default function Page({
   const [isHeroCountryDropdownOpen, setIsHeroCountryDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [darkMode, setDarkMode] = useState<boolean>(false);
+
+  const { lang, translateTexts } = useLanguage();
+
+  const [t, setT] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    translateTexts([
+      "How it works",
+      "Resources",
+      "Safety",
+      "About",
+      "Find Help. Feel Safer.",
+    ]).then(setT);
+  }, [lang]);
 
 
   const statsReveal = useScrollReveal();
@@ -288,7 +303,7 @@ export default function Page({
                   TrustLine
                 </span>
                 <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400 block mt-1">
-                  Find Help. Feel Safer.
+                  {t["Find Help. Feel Safer."] || "Find Help. Feel Safer."}
                 </span>
               </div>
             </button>
@@ -301,28 +316,28 @@ export default function Page({
                   onClick={() => handleNavigate("/how-it-works")}
                   className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
                 >
-                  How it works
+                  {t["How it works"] || "How it works"}
                 </button>
                 <button
                   type="button"
                   onClick={() => handleNavigate("/resources")}
                   className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
                 >
-                  Resources
+                  {t["Resources"] || "Resources"}
                 </button>
                 <button
                   type="button"
                   onClick={() => handleNavigate("/safety")}
                   className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
                 >
-                  Safety
+                  {t["Safety"] || "Safety"}
                 </button>
                 <button
                   type="button"
                   onClick={() => handleNavigate("/about")}
                   className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
                 >
-                  About
+                  {t["About"] || "About"}
                 </button>
               </div>
 

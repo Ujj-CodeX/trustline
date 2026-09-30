@@ -3,6 +3,8 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import { useEffect } from "react";
 import "./globals.css";
+import { LanguageProvider } from "@/lib/LanguageContext";
+import { LanguagePicker } from "@/components/LanguagePicker";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,12 +16,19 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   useEffect(() => {
     const savedTheme = localStorage.getItem("trustline_theme");
+
     const isDark =
       savedTheme === "dark" ||
-      (!savedTheme && window.matchMedia("(prefers-color-scheme: dark)").matches);
+      (!savedTheme &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches);
+
     document.documentElement.classList.toggle("dark", isDark);
   }, []);
 
@@ -28,8 +37,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <LanguageProvider>
+          {children}
+          <LanguagePicker />
+        </LanguageProvider>
+      </body>
     </html>
   );
 }
-
