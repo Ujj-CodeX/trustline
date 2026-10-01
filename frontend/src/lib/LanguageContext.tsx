@@ -24,6 +24,8 @@ const LanguageContext = createContext<LanguageContextType | null>(null);
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
 
+const CACHE_KEY = "trustline_ui_translation_cache";
+
 function safeStorageGet(key: string): string | null {
   if (typeof window === "undefined") return null;
 
@@ -40,7 +42,7 @@ function safeStorageSet(key: string, value: string): void {
   try {
     window.localStorage.setItem(key, value);
   } catch {
-    // Storage may be unavailable/restricted.
+    // Storage can be blocked by browser privacy settings.
   }
 }
 
@@ -50,9 +52,6 @@ export function LanguageProvider({
   children: ReactNode;
 }): React.JSX.Element {
   const [lang, setLang] = useState("en");
-
-  // Translation cache stays in memory.
-  // No localStorage writes for every translation update.
   const [cache, setCache] = useState<TranslationCache>({});
 
   const cacheRef = useRef<TranslationCache>({});
@@ -72,9 +71,16 @@ export function LanguageProvider({
     document.documentElement.lang = lang;
   }, [lang]);
 
+  useEffect(() => {
+    cacheRef.current = cache;
+
+    // Keep this cache in memory for the active session.
+    // Persisting it to browser storage is intentionally avoided.
+    void CACHE_KEY;
+  }, [cache]);
+
   const changeLang = useCallback((newLang: string) => {
     setLang(newLang);
-
     safeStorageSet("trustline_ui_lang", newLang);
   }, []);
 
@@ -99,8 +105,7 @@ export function LanguageProvider({
         );
       }
 
-      const currentCache =
-        cacheRef.current[lang] || {};
+      const currentCache = cacheRef.current[lang] || {};
 
       const missingTexts = uniqueTexts.filter(
         (text) => !(text in currentCache)
@@ -143,9 +148,7 @@ export function LanguageProvider({
 
         const data = await response.json();
 
-        const translated = Array.isArray(
-          data.translated
-        )
+        const translated = Array.isArray(data.translated)
           ? data.translated
           : [];
 
@@ -193,7 +196,6 @@ export function LanguageProvider({
           error
         );
 
-        // Keep already-known translations.
         return Object.fromEntries(
           uniqueTexts.map((text) => [
             text,
