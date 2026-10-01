@@ -16,12 +16,24 @@ import requests
 from copy import deepcopy
 from .translator import translate_text, translate_texts
 
+# Human-readable resource fields that should follow the user's language.
+# Deliberately excluded: phone numbers, URLs, country/state/district names,
+# category keys, verification status codes, and other machine-readable values.
 TRANSLATABLE_FIELDS = [
     "name",
+    "title",
     "organization",
+    "department",
+    "description",
+    "service",
+    "type",
+    "availability",
+    "languages",
+    "verified_by",
     "notes",
     "target",
 ]
+
 
 def localize_resources(resources, user_lang):
     if not resources:
@@ -32,17 +44,33 @@ def localize_resources(resources, user_lang):
     for resource in localized_resources:
         source_lang = resource.get("source_language", "English")
 
+        fields = []
+        values = []
+
         for field in TRANSLATABLE_FIELDS:
             value = resource.get(field)
 
-            if not isinstance(value, str) or not value.strip():
-                continue
+            if isinstance(value, str) and value.strip():
+                fields.append(field)
+                values.append(value)
 
-            resource[field] = translate_text(
-                value,
-                target_lang_name=user_lang,
-                source_lang_name=source_lang,
-            )
+        if not values:
+            continue
+
+        # Translate all human-readable fields of this resource together.
+        # Google batch is primary; translate_texts() already falls back to
+        # Argos per string and finally returns the original value.
+        translated_values = translate_texts(
+            values,
+            target_lang_name=user_lang,
+            source_lang_name=source_lang,
+        )
+
+        for field, translated_value in zip(
+            fields,
+            translated_values,
+        ):
+            resource[field] = translated_value
 
     return localized_resources
 

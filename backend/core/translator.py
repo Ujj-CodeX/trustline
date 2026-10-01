@@ -181,24 +181,34 @@ def google_translate_texts(texts, target_lang_name, source_lang_name=None):
         "language/translate/v2"
     )
 
-    payload = {
+    # Cloud Translation v2 documents q/target/source/format as request
+    # parameters. Sending q as repeated parameters also preserves batching.
+    params = {
+        "key": GOOGLE_TRANSLATE_API_KEY,
         "q": texts,
         "target": target_code,
         "format": "text",
     }
 
     if source_code:
-        payload["source"] = source_code
+        params["source"] = source_code
 
     response = requests.post(
         url,
-        params={"key": GOOGLE_TRANSLATE_API_KEY},
-        json=payload,
+        params=params,
         timeout=10,
     )
+
+    if not response.ok:
+        print(
+            f"[Google Batch Translation HTTP {response.status_code}] "
+            f"{response.text[:1000]}"
+        )
+
     response.raise_for_status()
 
-    translations = response.json()["data"]["translations"]
+    data = response.json()
+    translations = data["data"]["translations"]
 
     if len(translations) != len(texts):
         raise ValueError(
@@ -209,7 +219,6 @@ def google_translate_texts(texts, target_lang_name, source_lang_name=None):
         item.get("translatedText") or texts[index]
         for index, item in enumerate(translations)
     ]
-
 
 def translate_texts(texts, target_lang_name, source_lang_name=None):
     """
