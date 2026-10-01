@@ -26,13 +26,23 @@ const API_URL =
 
 const CACHE_KEY = "trustline_ui_translation_cache";
 
-function readCache(): TranslationCache {
-  if (typeof window === "undefined") return {};
+function safeStorageGet(key: string): string | null {
+  if (typeof window === "undefined") return null;
+
   try {
-    const saved = localStorage.getItem(CACHE_KEY);
-    return saved ? JSON.parse(saved) : {};
+    return window.localStorage.getItem(key);
   } catch {
-    return {};
+    return null;
+  }
+}
+
+function safeStorageSet(key: string, value: string): void {
+  if (typeof window === "undefined") return;
+
+  try {
+    window.localStorage.setItem(key, value);
+  } catch {
+    // Storage can be blocked by browser privacy settings.
   }
 }
 
@@ -42,30 +52,34 @@ export function LanguageProvider({
   children: ReactNode;
 }): React.JSX.Element {
   const [lang, setLang] = useState("en");
-  const [cache, setCache] = useState<TranslationCache>(() => readCache());
+  const [cache, setCache] = useState<TranslationCache>({});
 
-  const cacheRef = useRef<TranslationCache>(cache);
+  const cacheRef = useRef<TranslationCache>({});
   const requestIdRef = useRef(0);
 
   useEffect(() => {
-    cacheRef.current = cache;
-    try {
-      localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
-    } catch {}
-  }, [cache]);
+    const savedLang = safeStorageGet("trustline_ui_lang");
 
-  useEffect(() => {
-    const saved = localStorage.getItem("trustline_ui_lang");
-    if (saved) setLang(saved);
+    if (savedLang) {
+      setLang(savedLang);
+    }
   }, []);
 
   useEffect(() => {
     document.documentElement.lang = lang;
   }, [lang]);
 
+  useEffect(() => {
+    cacheRef.current = cache;
+
+    // Keep this cache in memory for the active session.
+    // Persisting it to browser storage is intentionally avoided.
+    void CACHE_KEY;
+  }, [cache]);
+
   const changeLang = useCallback((newLang: string) => {
     setLang(newLang);
-    localStorage.setItem("trustline_ui_lang", newLang);
+    safeStorageSet("trustline_ui_lang", newLang);
   }, []);
 
   const translateTexts = useCallback(
@@ -74,51 +88,65 @@ export function LanguageProvider({
         ...new Set(
           texts.filter(
             (text): text is string =>
-              typeof text === "string" && text.trim().length > 0
+              typeof text === "string" &&
+              text.trim().length > 0
           )
         ),
       ];
 
       if (!uniqueTexts.length || lang === "en") {
-        return Object.fromEntries(uniqueTexts.map((text) => [text, text]));
+        return Object.fromEntries(
+          uniqueTexts.map((text) => [text, text])
+        );
       }
 
       const currentCache = cacheRef.current[lang] || {};
+
       const missingTexts = uniqueTexts.filter(
         (text) => !(text in currentCache)
       );
 
       if (!missingTexts.length) {
         return Object.fromEntries(
-          uniqueTexts.map((text) => [text, currentCache[text] || text])
+          uniqueTexts.map((text) => [
+            text,
+            currentCache[text] || text,
+          ])
         );
       }
 
       const currentRequestId = ++requestIdRef.current;
 
       try {
-        const response = await fetch(`${API_URL}/api/translate-ui/`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          body: JSON.stringify({
-            texts: missingTexts,
-            lang,
-          }),
-        });
+        const response = await fetch(
+          `${API_URL}/api/translate-ui/`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+            body: JSON.stringify({
+              texts: missingTexts,
+              lang,
+            }),
+          }
+        );
 
         if (!response.ok) {
-          throw new Error(`UI translation failed: ${response.status}`);
+          throw new Error(
+            `UI translation failed: ${response.status}`
+          );
         }
 
         const data = await response.json();
+
         const translated = Array.isArray(data.translated)
           ? data.translated
           : [];
 
         const additions: Record<string, string> = {};
+
         missingTexts.forEach((text, index) => {
           additions[text] = translated[index] ?? text;
         });
@@ -151,7 +179,11 @@ export function LanguageProvider({
           ])
         );
       } catch (error) {
-        console.error("[TrustLine] UI translation request failed:", error);
+        console.error(
+          "[TrustLine] UI translation request failed:",
+          error
+        );
+
         return Object.fromEntries(
           uniqueTexts.map((text) => [
             text,
@@ -164,15 +196,28 @@ export function LanguageProvider({
   );
 
   const t = useCallback(
-    (text: string) =>
-      lang === "en"
-        ? text
-        : cacheRef.current[lang]?.[text] || text,
+    (text: string) => {
+      if (lang === "en") {
+        return text;
+      }
+
+      return (
+        cacheRef.current[lang]?.[text] ||
+        text
+      );
+    },
     [lang, cache]
   );
 
   return (
-    <LanguageContext.Provider value={{ lang, changeLang, t, translateTexts }}>
+    <LanguageContext.Provider
+      value={{
+        lang,
+        changeLang,
+        t,
+        translateTexts,
+      }}
+    >
       {children}
     </LanguageContext.Provider>
   );
@@ -180,8 +225,12 @@ export function LanguageProvider({
 
 export function useLanguage(): LanguageContextType {
   const context = useContext(LanguageContext);
+
   if (!context) {
-    throw new Error("useLanguage must be used inside LanguageProvider");
+    throw new Error(
+      "useLanguage must be used inside LanguageProvider"
+    );
   }
+
   return context;
 }
