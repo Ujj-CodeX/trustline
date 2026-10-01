@@ -16,9 +16,7 @@ import requests
 from copy import deepcopy
 from .translator import translate_text, translate_texts
 
-# Human-readable resource fields that should follow the user's language.
-# Deliberately excluded: phone numbers, URLs, country/state/district names,
-# category keys, verification status codes, and other machine-readable values.
+
 TRANSLATABLE_FIELDS = [
     "name",
     "title",
