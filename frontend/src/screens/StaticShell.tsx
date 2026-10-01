@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import { LocalizedPage } from "@/components/LocalizedPage";
 import {
   ArrowLeft, ShieldCheck, HelpCircle, BookOpen, Lock, Info,
   FileText, Brain, Heart, Users, Laptop, Scale, CloudRain,
@@ -13,18 +14,20 @@ interface StaticShellProps {
 
 export const StaticShell: React.FC<StaticShellProps> = ({ page, onNavigate }) => {
   const Wrapper = ({ children }: { children: React.ReactNode }) => (
-  <div className="min-h-screen w-full bg-white dark:bg-slate-950">
-    <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 pb-24 space-y-8">
-      <button onClick={() => onNavigate("/")} className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:text-teal-700 dark:hover:text-teal-300 cursor-pointer">
-        <ArrowLeft className="w-4 h-4" /> Back to Home
-      </button>
-      {children}
-      <button onClick={() => onNavigate("/chat")} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-semibold text-sm shadow-sm active:scale-95 cursor-pointer">
-        <ShieldCheck className="w-4 h-4" /> Launch TrustLine Chat
-      </button>
+    <div className="min-h-screen w-full bg-white dark:bg-slate-950">
+      <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 pb-24 space-y-8">
+        <LocalizedPage>
+          <button onClick={() => onNavigate("/")} className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:text-teal-700 dark:hover:text-teal-300 cursor-pointer">
+            <ArrowLeft className="w-4 h-4" /> Back to Home
+          </button>
+          {children}
+          <button onClick={() => onNavigate("/chat")} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-semibold text-sm shadow-sm active:scale-95 cursor-pointer">
+            <ShieldCheck className="w-4 h-4" /> Launch TrustLine Chat
+          </button>
+        </LocalizedPage>
+      </div>
     </div>
-  </div>
-);
+  );
 
   const Header = ({ Icon, title, tagline }: any) => (
     <div className="flex items-center gap-4">

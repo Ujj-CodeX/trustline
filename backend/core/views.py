@@ -14,7 +14,7 @@ from .fallbacks import get_fallback
 
 import requests
 from copy import deepcopy
-from .translator import translate_text
+from .translator import translate_text, translate_texts
 
 TRANSLATABLE_FIELDS = [
     "name",
@@ -257,25 +257,27 @@ class SitemapDataView(APIView):
 class TranslatedTextView(APIView):
     def post(self, request):
         texts = request.data.get("texts", [])
-        target_lang =  request.data.get("lang", "en")
+        target_lang = request.data.get("lang", "en")
 
         if not isinstance(texts, list):
             return Response(
                 {"error": "texts must be a list"},
-                status=400
+                status=400,
             )
-        translated =[]
 
-        for text in texts:
-            translated.append(
-                translate_text(
-                    text,
-                    target_lang_name=target_lang,
-                    source_lang_name="English",
-                )
+        if not all(isinstance(text, str) for text in texts):
+            return Response(
+                {"error": "every item in texts must be a string"},
+                status=400,
             )
+
+        translated = translate_texts(
+            texts,
+            target_lang_name=target_lang,
+            source_lang_name="English",
+        )
 
         return Response({
-            "translated": translated
+            "translated": translated,
         })
 

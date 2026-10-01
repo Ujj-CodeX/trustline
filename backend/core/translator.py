@@ -158,6 +158,133 @@ def argos_translate_text(text, source_lang_name, target_lang_name,):
 
 
 
+def google_translate_texts(texts, target_lang_name, source_lang_name=None):
+    """
+    Translate multiple strings in one Google Translation v2 request.
+    Returns translations in the same order as the input list.
+    """
+    if not texts:
+        return []
+
+    target_code = google_lang_to_code(target_lang_name)
+    if not target_code:
+        raise ValueError(
+            f"Google language code not found for: {target_lang_name}"
+        )
+
+    source_code = None
+    if source_lang_name:
+        source_code = google_lang_to_code(source_lang_name)
+
+    url = (
+        "https://translation.googleapis.com/"
+        "language/translate/v2"
+    )
+
+    payload = {
+        "q": texts,
+        "target": target_code,
+        "format": "text",
+    }
+
+    if source_code:
+        payload["source"] = source_code
+
+    response = requests.post(
+        url,
+        params={"key": GOOGLE_TRANSLATE_API_KEY},
+        json=payload,
+        timeout=10,
+    )
+    response.raise_for_status()
+
+    translations = response.json()["data"]["translations"]
+
+    if len(translations) != len(texts):
+        raise ValueError(
+            "Google returned a different number of translations."
+        )
+
+    return [
+        item.get("translatedText") or texts[index]
+        for index, item in enumerate(translations)
+    ]
+
+
+def translate_texts(texts, target_lang_name, source_lang_name=None):
+    """
+    Batch translation pipeline:
+    Google batch -> Argos per-string fallback -> original text.
+    """
+    if not texts:
+        return []
+
+    if not target_lang_name:
+        return list(texts)
+
+    source_code = (
+        google_lang_to_code(source_lang_name)
+        if source_lang_name
+        else None
+    )
+    target_code = google_lang_to_code(target_lang_name)
+
+    if source_code and target_code and source_code == target_code:
+        return list(texts)
+
+    translated_results = []
+    batch_size = 128
+
+    for start in range(0, len(texts), batch_size):
+        batch = texts[start:start + batch_size]
+
+        try:
+            translated_results.extend(
+                google_translate_texts(
+                    batch,
+                    target_lang_name=target_lang_name,
+                    source_lang_name=source_lang_name,
+                )
+            )
+            continue
+        except Exception as google_error:
+            print(
+                f"[Google Batch Translation Error] "
+                f"{source_lang_name or 'auto'} -> "
+                f"{target_lang_name}: {google_error}"
+            )
+
+        for text in batch:
+            try:
+                argos_source = source_lang_name or "English"
+                argos_source_code = argos_lang_to_code(argos_source)
+                argos_target_code = argos_lang_to_code(target_lang_name)
+
+                if not argos_source_code or not argos_target_code:
+                    raise ValueError(
+                        f"Argos language pair unsupported: "
+                        f"{argos_source} -> {target_lang_name}"
+                    )
+
+                translated = argostranslate.translate.translate(
+                    text,
+                    argos_source_code,
+                    argos_target_code,
+                )
+
+                translated_results.append(
+                    translated if translated else text
+                )
+            except Exception as argos_error:
+                print(
+                    f"[Argos Fallback Error] "
+                    f"{source_lang_name or 'English'} -> "
+                    f"{target_lang_name}: {argos_error}"
+                )
+                translated_results.append(text)
+
+    return translated_results
+
 def translate_text(text,target_lang_name,source_lang_name=None,):
 
     if not text or not text.strip():

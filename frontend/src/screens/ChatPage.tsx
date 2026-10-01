@@ -15,6 +15,7 @@ import { fetchChatResponse } from "@/lib/api";
 import { Message, ResourceItem, ExtractedIntent, CountryOption, UrgencyTier } from "@/types";
 
 import { ChevronDown } from "lucide-react";
+import { LocalizedPage } from "@/components/LocalizedPage";
 
 interface ChatPageProps {
   initialQuery?: string;
@@ -204,6 +205,7 @@ const getGeoLocation = async (): Promise<{ country: string; state: string; distr
 };
 
   return (
+  <LocalizedPage>
   <div className="min-h-screen w-full bg-white dark:bg-slate-950">
     <div id="chat-page-root" className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 space-y-6">
       {/* Top Breadcrumb & Return to Landing */}
@@ -405,5 +407,6 @@ const getGeoLocation = async (): Promise<{ country: string; state: string; distr
       </div>
     </div>
   </div>
+  </LocalizedPage>
   );
 };

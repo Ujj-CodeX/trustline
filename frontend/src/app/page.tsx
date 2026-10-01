@@ -1,6 +1,5 @@
 "use client";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
-import { useLanguage } from "@/lib/LanguageContext";
 import React, { useState, useEffect } from "react";
 import {
   ShieldCheck,
@@ -31,6 +30,7 @@ import {
 } from "lucide-react";
 
 import { DEFAULT_COUNTRIES } from "@/lib/countries";
+import { LocalizedPage } from "@/components/LocalizedPage";
 
 interface CountryItem {
   code: string;
@@ -64,20 +64,6 @@ export default function Page({
   const [isHeroCountryDropdownOpen, setIsHeroCountryDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [darkMode, setDarkMode] = useState<boolean>(false);
-
-  const { lang, translateTexts } = useLanguage();
-
-  const [t, setT] = useState<Record<string, string>>({});
-
-  useEffect(() => {
-    translateTexts([
-      "How it works",
-      "Resources",
-      "Safety",
-      "About",
-      "Find Help. Feel Safer.",
-    ]).then(setT);
-  }, [lang]);
 
 
   const statsReveal = useScrollReveal();
@@ -281,7 +267,8 @@ export default function Page({
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-200 selection:bg-teal-100 dark:selection:bg-teal-900">
+    <LocalizedPage>
+      <div className="min-h-screen flex flex-col bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-200 selection:bg-teal-100 dark:selection:bg-teal-900">
       {/* =========================================================================
           SECTION 1: NAVBAR (Logo + Tagline, Nav Links, Country Dropdown, Dark Mode)
           ========================================================================= */}
@@ -303,7 +290,7 @@ export default function Page({
                   TrustLine
                 </span>
                 <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400 block mt-1">
-                  {t["Find Help. Feel Safer."] || "Find Help. Feel Safer."}
+                  Find Help. Feel Safer.
                 </span>
               </div>
             </button>
@@ -316,28 +303,28 @@ export default function Page({
                   onClick={() => handleNavigate("/how-it-works")}
                   className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
                 >
-                  {t["How it works"] || "How it works"}
+                  How it works
                 </button>
                 <button
                   type="button"
                   onClick={() => handleNavigate("/resources")}
                   className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
                 >
-                  {t["Resources"] || "Resources"}
+                  Resources
                 </button>
                 <button
                   type="button"
                   onClick={() => handleNavigate("/safety")}
                   className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
                 >
-                  {t["Safety"] || "Safety"}
+                  Safety
                 </button>
                 <button
                   type="button"
                   onClick={() => handleNavigate("/about")}
                   className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
                 >
-                  {t["About"] || "About"}
+                  About
                 </button>
               </div>
 
@@ -1126,6 +1113,7 @@ export default function Page({
           </div>
         </div>
       </footer>
-    </div>
+      </div>
+    </LocalizedPage>
   );
 }

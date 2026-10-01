@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Phone, ExternalLink, ShieldCheck, MapPin, Globe, FileText, Star, MessageCircle, Clock } from "lucide-react";
 import { ResourceItem, UrgencyTier } from "@/types";
+import { useLanguage } from "@/lib/LanguageContext";
 
 interface ResourceCardProps {
   resource: ResourceItem;
@@ -8,11 +9,31 @@ interface ResourceCardProps {
   isTopRecommended?: boolean;
 }
 
+const RESOURCE_CARD_UI_TEXTS = [
+  "Top Recommended Resource",
+  "Verified",
+  "Call now",
+  "Visit website",
+  "24/7 Available",
+  "Limited Hours",
+  "Verified by",
+  "WhatsApp",
+  "(calling preferred for urgent help)",
+  "Report online at:",
+  "Call",
+];
+
 export const ResourceCard: React.FC<ResourceCardProps> = ({
   resource,
   urgencyTier = "general",
   isTopRecommended = false,
 }) => {
+  const { lang, t, translateTexts } = useLanguage();
+
+  useEffect(() => {
+    void translateTexts(RESOURCE_CARD_UI_TEXTS);
+  }, [lang, translateTexts]);
+
   // Verification check: ONLY 'verified_web', 'verified_authority', or India DB record (always trusted)
   const isIndiaRecord =
     resource.is_india_db === true ||
@@ -58,13 +79,13 @@ export const ResourceCard: React.FC<ResourceCardProps> = ({
         <div className="flex items-center justify-between gap-2 pb-3 mb-4 border-b border-slate-100 dark:border-slate-800/80">
           <div className="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-teal-700 dark:text-teal-400 uppercase">
             <Star className="w-4 h-4 fill-teal-600 dark:fill-teal-400 text-teal-600 dark:text-teal-400" />
-            <span>Top Recommended Resource</span>
+            <span>{t("Top Recommended Resource")}</span>
           </div>
 
           {isVerified && (
             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
               <ShieldCheck className="w-3.5 h-3.5" />
-              Verified
+              {t("Verified")}
             </span>
           )}
         </div>
@@ -102,7 +123,7 @@ export const ResourceCard: React.FC<ResourceCardProps> = ({
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-teal-700 hover:bg-teal-800 text-white font-semibold text-sm shadow-sm transition-colors focus:ring-2 focus:ring-teal-500 focus:outline-none"
               >
                 <Phone className="w-4 h-4" />
-                <span>Call now</span>
+                <span>{t("Call now")}</span>
               </a>
             )}
 
@@ -114,7 +135,7 @@ export const ResourceCard: React.FC<ResourceCardProps> = ({
                 rel="noreferrer"
                 className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-medium text-xs md:text-sm transition-colors"
               >
-                <span>Visit website</span>
+                <span>{t("Visit website")}</span>
                 <ExternalLink className="w-3.5 h-3.5" />
               </a>
             )}
@@ -166,13 +187,13 @@ export const ResourceCard: React.FC<ResourceCardProps> = ({
   {resource.available_24x7 !== undefined && resource.available_24x7 !== null && (
     <div className="flex items-center gap-1">
       <Clock className="w-3.5 h-3.5 text-slate-400" />
-      <span>{resource.available_24x7 ? "24/7 Available" : "Limited Hours"}</span>
+      <span>{resource.available_24x7 ? t("24/7 Available") : t("Limited Hours")}</span>
     </div>
   )}
   {resource.verified_by && (
     <div className="flex items-center gap-1">
       <ShieldCheck className="w-3.5 h-3.5 text-teal-500" />
-      <span>Verified by {resource.verified_by}</span>
+      <span>{t("Verified by")} {resource.verified_by}</span>
     </div>
   )}
 </div>
@@ -180,8 +201,8 @@ export const ResourceCard: React.FC<ResourceCardProps> = ({
 {resource.whatsapp && (
   <div className="mt-2 flex items-center gap-1.5 text-xs text-green-600 dark:text-green-400">
     <MessageCircle className="w-3.5 h-3.5" />
-    <span>WhatsApp: {resource.whatsapp}</span>
-    <span className="text-slate-400">(calling preferred for urgent help)</span>
+    <span>{t("WhatsApp")}: {resource.whatsapp}</span>
+    <span className="text-slate-400">{t("(calling preferred for urgent help)")}</span>
   </div>
 )}
       </div>
@@ -220,7 +241,7 @@ export const ResourceCard: React.FC<ResourceCardProps> = ({
 
           {websiteUrl && (
             <p className="text-xs text-teal-600 dark:text-teal-400 hover:underline pt-0.5">
-              Report online at: <span className="underline">{websiteUrl.replace(/^https?:\/\//, "")}</span>
+              {t("Report online at:")} <span className="underline">{websiteUrl.replace(/^https?:\/\//, "")}</span>
             </p>
           )}
 
@@ -237,7 +258,7 @@ export const ResourceCard: React.FC<ResourceCardProps> = ({
           )}
          {resource.available_24x7 !== undefined && resource.available_24x7 !== null && (
           <p className="text-[11px] text-slate-400 pt-0.5">
-         {resource.available_24x7 ? "24/7 Available" : "Limited Hours"}
+         {resource.available_24x7 ? t("24/7 Available") : t("Limited Hours")}
          </p>
          )}
         </div>
@@ -250,7 +271,7 @@ export const ResourceCard: React.FC<ResourceCardProps> = ({
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-50 hover:bg-teal-100 dark:bg-teal-950/50 dark:hover:bg-teal-900/60 text-teal-700 dark:text-teal-300 font-semibold text-xs transition-colors"
           >
             <Phone className="w-3.5 h-3.5" />
-            <span>Call {primaryPhone}</span>
+            <span>{t("Call")} {primaryPhone}</span>
           </a>
         )}
 
@@ -261,7 +282,7 @@ export const ResourceCard: React.FC<ResourceCardProps> = ({
             rel="noreferrer"
             className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-medium text-xs transition-colors"
           >
-            <span>Visit website</span>
+            <span>{t("Visit website")}</span>
             <ExternalLink className="w-3 h-3" />
           </a>
         )}
