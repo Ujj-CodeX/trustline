@@ -46,3 +46,61 @@ body {
   from { opacity: 0; transform: translateY(24px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+
+/* TrustLine Landing V2 */
+:root {
+  --trustline-dark: #051817;
+  --trustline-ink: #12312c;
+  --trustline-paper: #f6f4ee;
+  --trustline-teal: #0f766e;
+  --trustline-aqua: #2dd4bf;
+  --trustline-peach: #d48c84;
+}
+
+.landing-shell {
+  width: min(100%, 1200px);
+  margin-inline: auto;
+}
+
+.font-display {
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.landing-emergency-bar {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 60;
+  background: rgba(2, 7, 7, 0.96);
+  border-bottom: 1px solid rgba(248, 113, 113, 0.22);
+  backdrop-filter: blur(12px);
+}
+
+.landing-nav {
+  will-change: background-color, box-shadow, border-color;
+}
+
+.landing-hero-stage {
+  position: relative;
+  min-height: 440px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 640px) {
+  .landing-hero-stage {
+    min-height: 400px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-nav,
+  .landing-composer,
+  .landing-hero-phrase,
+  .animate-bounce {
+    transition: none !important;
+    animation: none !important;
+  }
+}
