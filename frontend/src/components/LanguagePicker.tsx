@@ -65,11 +65,11 @@ export function LanguagePicker() {
   return (
     <div
       ref={pickerRef}
-      className="fixed bottom-14 right-4 z-[60]"
+      className="fixed bottom-14 left-4 z-[60]"
     >
       <div className="relative">
         {open && (
-          <div className="absolute bottom-full right-0 mb-2 w-56 max-h-80 overflow-y-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-2xl dark:border-slate-700 dark:bg-slate-900">
+          <div className="absolute bottom-full left-0 mb-2 w-56 max-h-80 overflow-y-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-2xl dark:border-slate-700 dark:bg-slate-900">
             {LANGUAGES.map((language) => {
               const selected =
                 language.code === lang;
