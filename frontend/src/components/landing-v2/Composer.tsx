@@ -10,13 +10,16 @@ interface ComposerProps {
   onRouteSubmit?: (query: string, country: string) => void;
   initialPrompt?: string;
   className?: string;
+  variant?: "default" | "cta";
 }
 
 export default function Composer({
   onRouteSubmit,
   initialPrompt = "",
   className = "",
+  variant = "default",
 }: ComposerProps) {
+  const isCta = variant === "cta";
   const [promptText, setPromptText] = useState(initialPrompt);
   // Backend expects the country NAME ("India", "United States", ...), not the ISO code.
   // India is shown by default for the UI, but it is not treated as an
@@ -68,7 +71,7 @@ export default function Composer({
     <div className={`w-full max-w-4xl mx-auto ${className}`}>
       <form
         onSubmit={handleSubmit}
-        className={`w-full rounded-2xl sm:rounded-full p-2 sm:p-2.5 backdrop-blur-md flex flex-col sm:flex-row items-stretch sm:items-center gap-2 transition-all focus-within:ring-2 ${
+        className={`composer-root ${isCta ? "composer-cta" : ""} w-full rounded-2xl sm:rounded-full p-2 sm:p-2.5 backdrop-blur-md flex flex-col sm:flex-row items-stretch sm:items-center gap-2 transition-all focus-within:ring-2 ${
           isDark
             ? "bg-slate-900/95 shadow-2xl shadow-teal-400/25 ring-teal-400/30 border border-teal-700"
             : "bg-white/95 shadow-2xl shadow-teal-600/40 ring-teal-500/40 border border-teal-300"
