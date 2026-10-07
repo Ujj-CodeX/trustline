@@ -169,7 +169,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           <button
             type="button"
-            onClick={onFindHelpClick}
+            onClick={() => { window.location.href = "/chat"; }}
             className={`px-4 py-1.5 text-xs font-semibold rounded-full transition-all duration-200 shadow-sm active:scale-95 whitespace-nowrap shrink-0 flex items-center gap-1 cursor-pointer ${
               isDark
                 ? "text-slate-950 bg-white hover:bg-slate-100 shadow-black/20"
@@ -286,7 +286,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               type="button"
               onClick={() => {
                 setMobileMenuOpen(false);
-                onFindHelpClick();
+                window.location.href = "/chat";
               }}
               className={`w-full py-2.5 px-4 text-center text-xs font-semibold rounded-full cursor-pointer flex items-center justify-center gap-1.5 min-h-[44px] shadow-md active:scale-[0.98] transition-transform ${
                 isDark
