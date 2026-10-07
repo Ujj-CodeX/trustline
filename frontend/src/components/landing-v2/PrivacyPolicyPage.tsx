@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { ArrowLeft, ShieldCheck, Lock, ExternalLink, Mail, CheckCircle2, FileText } from 'lucide-react';
 import { useTheme } from './ThemeContext';
-import { useLanguage } from './LanguageContext';
+import { useLanguage } from '@/lib/LanguageContext';
 
 interface PrivacyPolicyPageProps {
   onBackToHome: () => void;
