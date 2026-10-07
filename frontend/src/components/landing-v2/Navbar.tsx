@@ -3,6 +3,8 @@
 import React, { useEffect, useState } from "react";
 import { ArrowRight, Menu, X } from "lucide-react";
 import { useLanguage } from "@/lib/LanguageContext";
+import { useTheme } from "./ThemeContext";
+import ThemeToggle from "./ThemeToggle";
 
 interface NavbarProps {
   onFindHelpClick: () => void;
@@ -13,9 +15,9 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isDark, setIsDark] = useState(false);
 
   const { t } = useLanguage();
+  const { isDark } = useTheme();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -31,25 +33,6 @@ export const Navbar: React.FC<NavbarProps> = ({
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
-  }, []);
-
-  useEffect(() => {
-    const updateTheme = () => {
-      setIsDark(
-        document.documentElement.classList.contains("dark")
-      );
-    };
-
-    updateTheme();
-
-    const observer = new MutationObserver(updateTheme);
-
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["class"],
-    });
-
-    return () => observer.disconnect();
   }, []);
 
   const handleMobileLinkClick = () => {
@@ -136,7 +119,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           }`}
         >
           <a
-            href="/how-it-works"
+            href="#how-it-works"
             className={`transition-colors duration-150 py-1 ${
               isDark
                 ? "hover:text-white"
@@ -147,7 +130,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           </a>
 
           <a
-            href="/resources"
+            href="#resources"
             className={`transition-colors duration-150 py-1 ${
               isDark
                 ? "hover:text-white"
@@ -158,7 +141,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           </a>
 
           <a
-            href="/safety"
+            href="#safety"
             className={`transition-colors duration-150 py-1 ${
               isDark
                 ? "hover:text-white"
@@ -169,7 +152,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           </a>
 
           <a
-            href="/about"
+            href="#about"
             className={`transition-colors duration-150 py-1 ${
               isDark
                 ? "hover:text-white"
@@ -181,7 +164,9 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         {/* Desktop Get Help */}
-        <div className="hidden md:flex items-center">
+        <div className="hidden md:flex items-center gap-3">
+          <ThemeToggle variant="nav" />
+
           <button
             type="button"
             onClick={onFindHelpClick}
@@ -205,6 +190,8 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Mobile controls */}
         <div className="flex md:hidden items-center gap-2">
+          <ThemeToggle variant="nav" />
+
           <button
             type="button"
             onClick={() => setMobileMenuOpen((prev) => !prev)}
@@ -240,7 +227,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         >
           <div className="flex flex-col space-y-1 text-sm font-normal">
             <a
-              href="/how-it-works"
+              href="#how-it-works"
               onClick={handleMobileLinkClick}
               className={`py-2.5 px-2 rounded-lg transition-colors flex items-center min-h-[44px] ${
                 isDark
@@ -252,7 +239,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             </a>
 
             <a
-              href="/resources"
+              href="#resources"
               onClick={handleMobileLinkClick}
               className={`py-2.5 px-2 rounded-lg transition-colors flex items-center min-h-[44px] ${
                 isDark
@@ -264,7 +251,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             </a>
 
             <a
-              href="/safety"
+              href="#safety"
               onClick={handleMobileLinkClick}
               className={`py-2.5 px-2 rounded-lg transition-colors flex items-center min-h-[44px] ${
                 isDark
@@ -276,7 +263,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             </a>
 
             <a
-              href="/about"
+              href="#about"
               onClick={handleMobileLinkClick}
               className={`py-2.5 px-2 rounded-lg transition-colors flex items-center min-h-[44px] ${
                 isDark
