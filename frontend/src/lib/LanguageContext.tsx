@@ -141,8 +141,15 @@ export function LanguageProvider({
         );
 
         if (!response.ok) {
-          throw new Error(
-            `UI translation failed: ${response.status}`
+          const errorText = await response.text();
+
+        console.error("UI translation error:", {
+           status: response.status,
+           body: errorText,
+          });
+
+        throw new Error(
+          `UI translation failed: ${response.status}`
           );
         }
 
