@@ -1,3 +1,4 @@
+"use client";
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 type Theme = 'dark' | 'light';
@@ -11,18 +12,21 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [theme, setTheme] = useState<Theme>(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('trustline_theme');
-      if (stored === 'light' || stored === 'dark') {
-        return stored;
-      }
+  // Keep the first render identical on server and client.
+  // Read localStorage only after hydration to avoid SSR/client markup mismatch.
+  const [theme, setTheme] = useState<Theme>('dark');
+
+  useEffect(() => {
+    const stored = localStorage.getItem('trustline_theme');
+
+    if (stored === 'light' || stored === 'dark') {
+      setTheme(stored);
     }
-    return 'dark'; // TrustLine default is premium dark
-  });
+  }, []);
 
   useEffect(() => {
     const root = document.documentElement;
+
     if (theme === 'light') {
       root.classList.add('light');
       root.classList.remove('dark');
@@ -30,6 +34,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       root.classList.add('dark');
       root.classList.remove('light');
     }
+
     localStorage.setItem('trustline_theme', theme);
   }, [theme]);
 
