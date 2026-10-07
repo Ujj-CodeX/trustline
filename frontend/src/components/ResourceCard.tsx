@@ -74,10 +74,10 @@ export const ResourceCard: React.FC<ResourceCardProps> = ({
       <div
         id="top-recommended-resource-card"
         data-translation-skip="true"
-        className={`bg-white dark:bg-slate-900 rounded-xl p-5 md:p-6 shadow-sm border border-slate-200 dark:border-slate-800 ${leftBorderClass} transition-all`}
+        className={`bg-white/95 dark:bg-[#081229] rounded-2xl p-5 md:p-6 shadow-lg border border-slate-200 dark:border-slate-700/80 ${leftBorderClass} transition-all`}
       >
         {/* Top Header with Recommended Label & Verified Badge */}
-        <div className="flex items-center justify-between gap-2 pb-3 mb-4 border-b border-slate-100 dark:border-slate-800/80">
+        <div className="flex items-center justify-between gap-2 pb-3 mb-4 border-b border-slate-200 dark:border-slate-800">
           <div className="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-teal-700 dark:text-teal-400 uppercase">
             <Star className="w-4 h-4 fill-teal-600 dark:fill-teal-400 text-teal-600 dark:text-teal-400" />
             <span>{t("Top Recommended Resource")}</span>
@@ -94,7 +94,7 @@ export const ResourceCard: React.FC<ResourceCardProps> = ({
         {/* Resource Main Info */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-start gap-3.5">
-            <div className="w-12 h-12 rounded-xl bg-teal-50 dark:bg-teal-950/40 border border-teal-100 dark:border-teal-900/50 flex items-center justify-center shrink-0 text-teal-700 dark:text-teal-400 font-bold">
+            <div className="w-12 h-12 rounded-xl bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800/60 flex items-center justify-center shrink-0 text-teal-700 dark:text-teal-400 font-bold">
               <ShieldCheck className="w-7 h-7 text-teal-600 dark:text-teal-400" />
             </div>
 
@@ -121,7 +121,7 @@ export const ResourceCard: React.FC<ResourceCardProps> = ({
               <a
                 id="call-now-button"
                 href={`tel:${primaryPhone.replace(/\s+/g, "")}`}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-teal-700 hover:bg-teal-800 text-white font-semibold text-sm shadow-sm transition-colors focus:ring-2 focus:ring-teal-500 focus:outline-none"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-teal-600 hover:bg-teal-500 text-white dark:text-slate-950 font-semibold text-sm shadow-md transition-colors focus:ring-2 focus:ring-teal-500 focus:outline-none"
               >
                 <Phone className="w-4 h-4" />
                 <span>{t("Call now")}</span>
@@ -134,7 +134,7 @@ export const ResourceCard: React.FC<ResourceCardProps> = ({
                 href={websiteUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-medium text-xs md:text-sm transition-colors"
+                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg bg-slate-100 dark:bg-slate-900/80 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-medium text-xs md:text-sm transition-colors"
               >
                 <span>{t("Visit website")}</span>
                 <ExternalLink className="w-3.5 h-3.5" />
@@ -166,7 +166,7 @@ export const ResourceCard: React.FC<ResourceCardProps> = ({
         )}
 
         {/* Metadata Chips */}
-        <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
+        <div className="mt-4 pt-3 border-t border-slate-200 dark:border-slate-800 flex flex-wrap items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
   {locationText && (
     <div className="flex items-center gap-1">
       <MapPin className="w-3.5 h-3.5 text-slate-400" />
@@ -215,10 +215,10 @@ export const ResourceCard: React.FC<ResourceCardProps> = ({
     <div
       id={`resource-card-${resource.id || resource.name}`}
       data-translation-skip="true"
-      className="bg-white dark:bg-slate-900 rounded-xl p-4 md:p-5 shadow-xs border border-slate-200/80 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-slate-300 dark:hover:border-slate-700 transition-colors"
+      className="bg-white/95 dark:bg-[#081229] rounded-2xl p-4 md:p-5 shadow-md border border-slate-200/80 dark:border-slate-700/80 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-slate-300 dark:hover:border-slate-700 transition-colors"
     >
       <div className="flex items-start gap-3">
-        <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0 text-slate-600 dark:text-slate-300">
+        <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-900 flex items-center justify-center shrink-0 text-slate-600 dark:text-slate-300">
           <ShieldCheck className="w-5 h-5 text-teal-600 dark:text-teal-400" />
         </div>
 
