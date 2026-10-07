@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   MessageSquare,
   ShieldCheck,
@@ -11,6 +11,7 @@ import {
 
 import { useLanguage } from "@/lib/LanguageContext";
 import ScrollReveal from "./ScrollReveal";
+import { useTheme } from "./ThemeContext";
 
 interface TrustCardProps {
   number: string;
@@ -111,26 +112,7 @@ function TrustCard({
 
 export default function TrustSection() {
   const { t } = useLanguage();
-  const [isDark, setIsDark] = useState(false);
-
-  useEffect(() => {
-    const updateTheme = () => {
-      setIsDark(
-        document.documentElement.classList.contains("dark")
-      );
-    };
-
-    updateTheme();
-
-    const observer = new MutationObserver(updateTheme);
-
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["class"],
-    });
-
-    return () => observer.disconnect();
-  }, []);
+  const { isDark } = useTheme();
 
   return (
     <section
@@ -174,7 +156,11 @@ export default function TrustSection() {
                 )}
               </p>
 
-              <div className="flex items-center gap-2 text-xs font-medium text-teal-600 dark:text-teal-300">
+              <div
+                className={`flex items-center gap-2 text-xs font-medium ${
+                  isDark ? "text-teal-300" : "text-teal-600"
+                }`}
+              >
                 <Compass className="h-3.5 w-3.5" />
                 <span>
                   {t("Understanding first. Verified routing next.")}
