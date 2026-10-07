@@ -73,6 +73,7 @@ export const ResourceCard: React.FC<ResourceCardProps> = ({
     return (
       <div
         id="top-recommended-resource-card"
+        data-translation-skip="true"
         className={`bg-white dark:bg-slate-900 rounded-xl p-5 md:p-6 shadow-sm border border-slate-200 dark:border-slate-800 ${leftBorderClass} transition-all`}
       >
         {/* Top Header with Recommended Label & Verified Badge */}
@@ -213,6 +214,7 @@ export const ResourceCard: React.FC<ResourceCardProps> = ({
   return (
     <div
       id={`resource-card-${resource.id || resource.name}`}
+      data-translation-skip="true"
       className="bg-white dark:bg-slate-900 rounded-xl p-4 md:p-5 shadow-xs border border-slate-200/80 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-slate-300 dark:hover:border-slate-700 transition-colors"
     >
       <div className="flex items-start gap-3">
