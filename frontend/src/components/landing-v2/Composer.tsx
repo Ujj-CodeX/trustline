@@ -19,7 +19,11 @@ export default function Composer({
 }: ComposerProps) {
   const [promptText, setPromptText] = useState(initialPrompt);
   // Backend expects the country NAME ("India", "United States", ...), not the ISO code.
+  // India is shown by default for the UI, but it is not treated as an
+  // explicitly selected country until the user actually chooses one.
   const [selectedCountry, setSelectedCountry] = useState("India");
+  const [hasManualCountrySelection, setHasManualCountrySelection] =
+    useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -48,7 +52,10 @@ export default function Composer({
     setIsSubmitting(true);
 
     window.setTimeout(() => {
-      onRouteSubmit?.(query, currentCountry.name);
+      onRouteSubmit?.(
+        query,
+        hasManualCountrySelection ? currentCountry.name : ""
+      );
       setIsSubmitting(false);
     }, 250);
   };
@@ -111,6 +118,7 @@ export default function Composer({
                     type="button"
                     onClick={() => {
                       setSelectedCountry(country.name);
+                      setHasManualCountrySelection(true);
                       setDropdownOpen(false);
                     }}
                     className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs sm:text-sm text-left transition-colors cursor-pointer ${
