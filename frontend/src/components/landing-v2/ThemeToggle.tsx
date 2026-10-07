@@ -1,7 +1,12 @@
+<<<<<<< HEAD
 "use client";
 
 import React from "react";
 import { Sun, Moon } from "lucide-react";
+=======
+import React from 'react';
+import { Sun, Moon } from 'lucide-react';
+>>>>>>> 16c6caff36431655593351e4d1702f71f7a55b42
 import { useTheme } from "./ThemeContext";
 
 interface ThemeToggleProps {
