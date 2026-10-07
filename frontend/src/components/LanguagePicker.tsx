@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Languages, ChevronDown, Check } from "lucide-react";
+import { Globe, ChevronUp, Check } from "lucide-react";
 import { useLanguage } from "@/lib/LanguageContext";
 
 const LANGUAGES = [
@@ -66,11 +66,11 @@ export function LanguagePicker() {
     <div
       ref={pickerRef}
       data-translation-skip="true"
-      className="fixed bottom-14 right-4 z-[60]"
+      className="fixed bottom-5 left-4 sm:bottom-6 sm:left-6 z-[80]"
     >
       <div className="relative">
         {open && (
-          <div className="absolute bottom-full right-0 mb-2 w-56 max-h-80 overflow-y-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-2xl dark:border-slate-700 dark:bg-slate-900">
+          <div className="absolute bottom-full left-0 mb-2 w-56 max-h-80 overflow-y-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-2xl dark:border-slate-700 dark:bg-slate-900">
             {LANGUAGES.map((language) => {
               const selected =
                 language.code === lang;
@@ -110,15 +110,18 @@ export function LanguagePicker() {
           onClick={() => setOpen((previous) => !previous)}
           aria-haspopup="listbox"
           aria-expanded={open}
-          className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white/95 px-3 py-2 text-xs font-semibold text-slate-800 shadow-lg backdrop-blur-md transition-colors hover:bg-white dark:border-slate-700 dark:bg-slate-900/95 dark:text-slate-100 dark:hover:bg-slate-900"
+          className="flex items-center gap-2 rounded-full border border-slate-700/80 bg-[#081229]/95 px-3 py-2 text-xs font-semibold text-slate-100 shadow-xl backdrop-blur-md transition-colors hover:bg-[#0c1838]"
         >
-          <Languages className="h-4 w-4 text-teal-600 dark:text-teal-400" />
+          <Globe className="h-4 w-4 text-teal-500" />
+          <span className="text-[10px] font-mono uppercase text-slate-400 dark:text-slate-500">
+            {selectedLanguage.code}
+          </span>
           <span>{selectedLanguage.name}</span>
-          <ChevronDown
+          <ChevronUp
             className={[
               "h-3.5 w-3.5 text-slate-500 transition-transform",
               "dark:text-slate-400",
-              open ? "rotate-180" : "",
+              open ? "" : "rotate-180",
             ].join(" ")}
           />
         </button>
