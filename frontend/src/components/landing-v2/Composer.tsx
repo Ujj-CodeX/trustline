@@ -18,7 +18,7 @@ export default function Composer({
   className = "",
 }: ComposerProps) {
   const [promptText, setPromptText] = useState(initialPrompt);
-  const [selectedCountry, setSelectedCountry] = useState("IN");
+  const [selectedCountry, setSelectedCountry] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -28,7 +28,11 @@ export default function Composer({
   const currentCountry =
     DEFAULT_COUNTRIES.find(
       (country) => country.code === selectedCountry
-    ) || DEFAULT_COUNTRIES[0];
+    ) || {
+      code: "",
+      name: "Select Country",
+      flag: "🌐",
+    };
 
   const promptSuggestions = [
     "My Instagram account was hacked",
@@ -47,7 +51,7 @@ export default function Composer({
     setIsSubmitting(true);
 
     window.setTimeout(() => {
-      onRouteSubmit?.(query, currentCountry.name);
+      onRouteSubmit?.(query, selectedCountry);
       setIsSubmitting(false);
     }, 250);
   };
