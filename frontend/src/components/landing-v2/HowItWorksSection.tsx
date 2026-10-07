@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   MessageSquare,
   ScanLine,
@@ -10,6 +10,7 @@ import {
 
 import { useLanguage } from "@/lib/LanguageContext";
 import ScrollReveal from "./ScrollReveal";
+import { useTheme } from "./ThemeContext";
 
 interface Step {
   number: string;
@@ -44,26 +45,7 @@ const STEPS: Step[] = [
 
 export default function HowItWorksSection() {
   const { t } = useLanguage();
-  const [isDark, setIsDark] = useState(false);
-
-  useEffect(() => {
-    const updateTheme = () => {
-      setIsDark(
-        document.documentElement.classList.contains("dark")
-      );
-    };
-
-    updateTheme();
-
-    const observer = new MutationObserver(updateTheme);
-
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["class"],
-    });
-
-    return () => observer.disconnect();
-  }, []);
+  const { isDark } = useTheme();
 
   const getIcon = (index: number) => {
     switch (index) {
