@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { ShieldCheck } from "lucide-react";
 
 import { useLanguage } from "@/lib/LanguageContext";
 import Composer from "./Composer";
 import ScrollReveal from "./ScrollReveal";
+import { useTheme } from "./ThemeContext";
 
 interface FinalCTAProps {
   onRouteSubmit: (
@@ -18,26 +19,7 @@ export default function FinalCTA({
   onRouteSubmit,
 }: FinalCTAProps) {
   const { t } = useLanguage();
-  const [isDark, setIsDark] = useState(false);
-
-  useEffect(() => {
-    const updateTheme = () => {
-      setIsDark(
-        document.documentElement.classList.contains("dark")
-      );
-    };
-
-    updateTheme();
-
-    const observer = new MutationObserver(updateTheme);
-
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["class"],
-    });
-
-    return () => observer.disconnect();
-  }, []);
+  const { isDark } = useTheme();
 
   return (
     <section
@@ -63,7 +45,9 @@ export default function FinalCTA({
       <div className="relative z-10 mx-auto max-w-4xl px-4 text-center sm:px-6">
         {/* Kicker */}
         <ScrollReveal direction="down">
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-teal-500/30 bg-teal-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-teal-600 dark:text-teal-300">
+          <div className={`mb-4 inline-flex items-center gap-2 rounded-full border border-teal-500/30 bg-teal-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider ${
+              isDark ? "text-teal-300" : "text-teal-600"
+            }`}>
             <ShieldCheck className="h-3.5 w-3.5 text-teal-500" />
 
             <span>
