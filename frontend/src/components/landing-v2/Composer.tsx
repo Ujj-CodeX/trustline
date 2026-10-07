@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { ArrowUp, ChevronDown, Check } from "lucide-react";
 import { useLanguage } from "@/lib/LanguageContext";
 import { DEFAULT_COUNTRIES } from "@/lib/countries";
+import { useTheme } from "./ThemeContext";
 
 interface ComposerProps {
   onRouteSubmit?: (query: string, country: string) => void;
@@ -22,6 +23,7 @@ export default function Composer({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { t } = useLanguage();
+  const { isDark } = useTheme();
 
   const currentCountry =
     DEFAULT_COUNTRIES.find(
@@ -58,7 +60,11 @@ export default function Composer({
     <div className={`w-full max-w-3xl mx-auto ${className}`}>
       <form
         onSubmit={handleSubmit}
-        className="relative rounded-2xl sm:rounded-3xl bg-[#f6f4ee] text-slate-900 shadow-[0_18px_60px_rgba(0,0,0,0.22)] border border-white/50 p-3 sm:p-4 transition-all duration-300 focus-within:ring-2 focus-within:ring-teal-400/40"
+        className={`relative rounded-2xl sm:rounded-3xl p-3 sm:p-4 text-slate-900 transition-all duration-300 focus-within:ring-2 focus-within:ring-teal-400/40 ${
+          isDark
+            ? "bg-[#060e22] shadow-2xl shadow-black/70 border border-slate-700/80 hover:border-slate-600"
+            : "bg-[#f6f4ee] shadow-[0_18px_60px_rgba(0,0,0,0.22)] border border-white/50"
+        }`}
       >
         {/* Input */}
         <div className="px-1">
@@ -67,7 +73,11 @@ export default function Composer({
             value={promptText}
             onChange={(event) => setPromptText(event.target.value)}
             placeholder={t("Describe what you need help with...")}
-            className="w-full bg-transparent outline-none text-[15px] sm:text-base placeholder:text-slate-500"
+            className={`w-full bg-transparent outline-none text-[15px] sm:text-base ${
+              isDark
+                ? "text-white placeholder:text-slate-400"
+                : "text-slate-900 placeholder:text-slate-500"
+            }`}
           />
         </div>
 
@@ -77,7 +87,11 @@ export default function Composer({
             <button
               type="button"
               onClick={() => setDropdownOpen((prev) => !prev)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/70 hover:bg-white border border-slate-300 text-xs font-medium transition-colors"
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                isDark
+                  ? "bg-[#081229] border border-slate-700 text-white"
+                  : "bg-white/70 hover:bg-white border border-slate-300 text-slate-900"
+              }`}
             >
               <span>{currentCountry.flag}</span>
               <span>{currentCountry.name}</span>
@@ -93,7 +107,11 @@ export default function Composer({
                   onClick={() => setDropdownOpen(false)}
                 />
 
-                <div className="absolute left-0 bottom-full mb-2 z-30 w-48 max-h-60 overflow-y-auto rounded-xl bg-white border border-slate-200 shadow-2xl p-1">
+                <div className={`absolute left-0 bottom-full mb-2 z-30 w-48 max-h-60 overflow-y-auto rounded-xl shadow-2xl p-1 border ${
+                  isDark
+                    ? "bg-[#081229] border-slate-700"
+                    : "bg-white border-slate-200"
+                }`}>
                   {DEFAULT_COUNTRIES.map((country) => (
                     <button
                       key={country.code}
@@ -104,8 +122,12 @@ export default function Composer({
                       }}
                       className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs text-left transition-colors ${
                         selectedCountry === country.code
-                          ? "bg-teal-50 text-teal-700"
-                          : "text-slate-700 hover:bg-slate-100"
+                          ? isDark
+                            ? "bg-teal-950/80 text-teal-300"
+                            : "bg-teal-50 text-teal-700"
+                          : isDark
+                            ? "text-slate-200 hover:bg-slate-800"
+                            : "text-slate-700 hover:bg-slate-100"
                       }`}
                     >
                       <span className="flex items-center gap-2">
@@ -145,7 +167,11 @@ export default function Composer({
             key={suggestion}
             type="button"
             onClick={() => handleSuggestion(suggestion)}
-            className="px-3 py-1.5 rounded-full border border-white/20 bg-white/10 hover:bg-white/15 text-white/85 text-[11px] sm:text-xs backdrop-blur-sm transition-all active:scale-95"
+            className={`px-3 py-1.5 rounded-full border text-[11px] sm:text-xs backdrop-blur-sm transition-all active:scale-95 ${
+              isDark
+                ? "border-white/20 bg-white/10 text-white/85 hover:bg-white/15"
+                : "border-slate-300 bg-white/70 text-slate-700 hover:bg-white"
+            }`}
           >
             {t(suggestion)}
           </button>
