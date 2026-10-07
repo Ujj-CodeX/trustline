@@ -449,7 +449,9 @@ export function LanguageProvider({
         textNodeState.set(node, state);
 
         if (lang === "en") {
-          node.nodeValue = state.original;
+          if (node.nodeValue !== state.original) {
+            node.nodeValue = state.original;
+          }
           state.translated = null;
           return;
         }
@@ -518,10 +520,15 @@ export function LanguageProvider({
             states!.set(attribute, state);
 
             if (lang === "en") {
-              element.setAttribute(
-                attribute,
+              if (
+                element.getAttribute(attribute) !==
                 state.original
-              );
+              ) {
+                element.setAttribute(
+                  attribute,
+                  state.original
+                );
+              }
               state.translated = null;
               return;
             }
@@ -562,6 +569,10 @@ export function LanguageProvider({
       const translated =
         await translateTexts(originals);
 
+      if (disposed) {
+        return;
+      }
+
       textNodesByOriginal.forEach(
         (nodes, original) => {
           const translatedValue =
@@ -577,11 +588,15 @@ export function LanguageProvider({
             state.translated =
               translatedValue;
 
-            node.nodeValue =
+            const nextValue =
               preserveWhitespace(
                 state.original,
                 translatedValue
               );
+
+            if (node.nodeValue !== nextValue) {
+              node.nodeValue = nextValue;
+            }
           });
         }
       );
@@ -605,13 +620,21 @@ export function LanguageProvider({
               state.translated =
                 translatedValue;
 
-              element.setAttribute(
-                attribute,
+              const nextValue =
                 preserveWhitespace(
                   state.original,
                   translatedValue
-                )
-              );
+                );
+
+              if (
+                element.getAttribute(attribute) !==
+                nextValue
+              ) {
+                element.setAttribute(
+                  attribute,
+                  nextValue
+                );
+              }
             }
           );
         }
