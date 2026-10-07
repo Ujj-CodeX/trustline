@@ -198,7 +198,7 @@ export const Footer: React.FC = () => {
 
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 sm:gap-x-5">
               <a
-                href="#about"
+                href="/terms"
                 className={`rounded-md py-1 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 ${
                   isDark
                     ? "hover:text-slate-300"
@@ -209,7 +209,7 @@ export const Footer: React.FC = () => {
               </a>
 
               <a
-                href="#about"
+                href="/privacy"
                 className={`rounded-md py-1 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 ${
                   isDark
                     ? "hover:text-slate-300"
