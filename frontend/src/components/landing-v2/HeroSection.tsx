@@ -7,6 +7,7 @@ import { ChevronDown } from "lucide-react";
 import Composer from "./Composer";
 import {NetworkCanvas} from "./NetworkCanvas";
 import { useLanguage } from "@/lib/LanguageContext";
+import { useTheme } from "./ThemeContext";
 
 interface HeroSectionProps {
   onRouteSubmit: (query: string, country: string) => void;
@@ -17,6 +18,7 @@ export default function HeroSection({
 }: HeroSectionProps) {
   const [phase, setPhase] = useState(0);
   const { t } = useLanguage();
+  const { isDark } = useTheme();
 
   useEffect(() => {
     const first = window.setTimeout(() => {
@@ -75,7 +77,9 @@ export default function HeroSection({
                 ease: [0.16, 1, 0.3, 1],
               }}
             >
-              <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight text-white leading-tight">
+              <h1 className={`text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight leading-tight ${
+                isDark ? "text-white" : "text-slate-900"
+              }`}>
                 {t("You know you need help.")}
               </h1>
             </motion.div>
@@ -104,7 +108,9 @@ export default function HeroSection({
                 ease: [0.16, 1, 0.3, 1],
               }}
             >
-              <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight text-white leading-tight">
+              <h1 className={`text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight leading-tight ${
+                isDark ? "text-white" : "text-slate-900"
+              }`}>
                 {t("You just don't know where to start.")}
               </h1>
             </motion.div>
@@ -130,11 +136,15 @@ export default function HeroSection({
               className="w-full flex flex-col items-center"
             >
               <div className="w-full max-w-4xl px-2 mb-6 sm:mb-8">
-                <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-[4rem] font-bold tracking-tight text-white leading-tight">
+                <h1 className={`text-3xl sm:text-5xl md:text-6xl lg:text-[4rem] font-bold tracking-tight leading-tight ${
+                  isDark ? "text-white" : "text-slate-900"
+                }`}>
                   {t("Find the help you deserve.")}
                 </h1>
 
-                <p className="mt-3 text-sm sm:text-base md:text-lg text-slate-300 max-w-2xl mx-auto">
+                <p className={`mt-3 text-sm sm:text-base md:text-lg max-w-2xl mx-auto ${
+                  isDark ? "text-slate-300" : "text-slate-600"
+                }`}>
                   {t(
                     "Tell us what is happening. TrustLine helps you find the right support."
                   )}
@@ -160,10 +170,16 @@ export default function HeroSection({
       </div>
 
       {/* Scroll cue */}
-      <div className="relative z-10 flex flex-col items-center pt-6 text-slate-300">
+      <div
+        className={`relative z-10 flex flex-col items-center pt-6 ${
+          isDark ? "text-slate-300" : "text-slate-600"
+        }`}
+      >
         <a
           href="#how-it-works"
-          className="group flex flex-col items-center gap-1 text-xs sm:text-sm hover:text-white transition-colors"
+          className={`group flex flex-col items-center gap-1 text-xs sm:text-sm transition-colors ${
+            isDark ? "hover:text-white" : "hover:text-slate-950"
+          }`}
         >
           <span>{t("How it works")}</span>
           <ChevronDown className="w-4 h-4 group-hover:translate-y-0.5 transition-transform" />
