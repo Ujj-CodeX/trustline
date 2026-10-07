@@ -15,7 +15,6 @@ import { fetchChatResponse } from "@/lib/api";
 import { Message, ResourceItem, ExtractedIntent, CountryOption, UrgencyTier } from "@/types";
 
 import { ChevronDown } from "lucide-react";
-import { LocalizedPage } from "@/components/LocalizedPage";
 
 interface ChatPageProps {
   initialQuery?: string;
@@ -205,7 +204,6 @@ const getGeoLocation = async (): Promise<{ country: string; state: string; distr
 };
 
   return (
-  <LocalizedPage>
   <div className="min-h-screen w-full bg-white dark:bg-slate-950">
     <div id="chat-page-root" className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 space-y-6">
       {/* Top Breadcrumb & Return to Landing */}
@@ -303,7 +301,10 @@ const getGeoLocation = async (): Promise<{ country: string; state: string; distr
         {/* Message Thread Body */}
         <div className="p-4 sm:p-6 space-y-6">
           {/* Bubbles */}
-          <div className="space-y-4">
+          <div
+            className="space-y-4"
+            data-translation-skip="true"
+          >
             {messages.map((msg) => (
               <ChatBubble key={msg.id} message={msg} />
             ))}
@@ -311,7 +312,10 @@ const getGeoLocation = async (): Promise<{ country: string; state: string; distr
 
           {/* Top Recommended Resource Card */}
           {topResource && (
-            <div className="pt-2">
+            <div
+              className="pt-2"
+              data-translation-skip="true"
+            >
               <ResourceCard
                 resource={topResource}
                 urgencyTier={currentExtracted?.urgency_tier as UrgencyTier || "general"}
@@ -334,12 +338,16 @@ const getGeoLocation = async (): Promise<{ country: string; state: string; distr
 
               <div className="space-y-2.5">
                 {otherResources.map((res, index) => (
-                  <ResourceCard
+                  <div
                     key={res.id || index}
-                    resource={res}
-                    urgencyTier={currentExtracted?.urgency_tier as UrgencyTier || "general"}
-                    isTopRecommended={false}
-                  />
+                    data-translation-skip="true"
+                  >
+                    <ResourceCard
+                      resource={res}
+                      urgencyTier={currentExtracted?.urgency_tier as UrgencyTier || "general"}
+                      isTopRecommended={false}
+                    />
+                  </div>
                 ))}
               </div>
             </div>
@@ -407,6 +415,5 @@ const getGeoLocation = async (): Promise<{ country: string; state: string; distr
       </div>
     </div>
   </div>
-  </LocalizedPage>
   );
 };
