@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { ArrowRight, Menu, X } from "lucide-react";
 import { useLanguage } from "@/lib/LanguageContext";
 import { useTheme } from "./ThemeContext";
-import ThemeToggle from "./ThemeToggle";
+import { ThemeToggle } from "./ThemeToggle";
 
 interface NavbarProps {
   onFindHelpClick: () => void;
