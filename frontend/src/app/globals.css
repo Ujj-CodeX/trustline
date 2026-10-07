@@ -1,48 +1,217 @@
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@layer base {
+  :root {
+    --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-serif: 'Instrument Serif', Georgia, serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: #030712;
+    color: #f1f5f9;
+    overflow-x: hidden;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  html.light body {
+    background-color: #f8fafc;
+    color: #0f172a;
+  }
+
+  /* Accessible focus indicators */
+  :focus-visible {
+    outline: 2px solid #2dd4bf;
+    outline-offset: 2px;
+  }
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* Cinematic Sky Gradient matching reference images */
+.cinematic-sky-bg {
+  background-color: #030712;
+  background-image: 
+    radial-gradient(ellipse 120% 45% at 50% 97%, rgba(228, 157, 140, 0.45) 0%, rgba(184, 116, 108, 0.32) 24%, rgba(84, 48, 74, 0.22) 48%, transparent 75%),
+    linear-gradient(180deg, 
+      #01040a 0%, 
+      #040a1c 16%, 
+      #081432 34%, 
+      #0d1d44 52%, 
+      #132454 66%, 
+      #1d2854 76%, 
+      #35294e 84%, 
+      #623e52 90%, 
+      #9a6265 95%, 
+      #c48a7d 98%, 
+      #754d58 100%
+    );
 }
 
-.dark {
-  --background: #0a0a0a;
-  --foreground: #ededed;
+/* Page Section Backgrounds matching the Heroic Theme */
+.section-dark-elevated {
+  background-color: #040916;
+  background-image: radial-gradient(circle at 50% 0%, rgba(13, 33, 76, 0.35) 0%, rgba(4, 9, 22, 1) 70%);
+}
+
+html.light .section-dark-elevated {
+  background-color: #ffffff;
+  background-image: radial-gradient(circle at 50% 0%, rgba(224, 242, 254, 0.45) 0%, rgba(255, 255, 255, 1) 75%);
+}
+
+.section-deep-midnight {
+  background-color: #030713;
+  background-image: radial-gradient(ellipse 80% 50% at 50% 100%, rgba(184, 116, 108, 0.12) 0%, rgba(30, 41, 75, 0.25) 45%, rgba(3, 7, 19, 1) 90%);
+}
+
+html.light .section-deep-midnight {
+  background-color: #f8fafc;
+  background-image: radial-gradient(ellipse 80% 50% at 50% 100%, rgba(254, 215, 170, 0.25) 0%, rgba(224, 231, 255, 0.3) 45%, rgba(248, 250, 252, 1) 90%);
+}
+
+html.light .cinematic-sky-bg {
+  background-color: #f8fafc;
+  background-image: 
+    radial-gradient(ellipse 120% 45% at 50% 97%, rgba(244, 190, 175, 0.45) 0%, rgba(210, 160, 175, 0.25) 24%, rgba(180, 195, 225, 0.2) 48%, transparent 75%),
+    linear-gradient(180deg, 
+      #e2e8f0 0%, 
+      #edf2f7 16%, 
+      #f1f5f9 34%, 
+      #f8fafc 52%, 
+      #faf5f0 66%, 
+      #fef3ec 76%, 
+      #faeae1 84%, 
+      #f5dfd5 90%, 
+      #f2d5c8 95%, 
+      #f0cbbe 98%, 
+      #e8bcae 100%
+    );
+}
+
+.horizon-glow {
+  background: radial-gradient(ellipse 100% 50% at 50% 100%, rgba(214, 148, 126, 0.35) 0%, rgba(138, 77, 92, 0.2) 40%, rgba(14, 25, 58, 0) 75%);
+}
+
+.font-display-serif {
+  font-family: var(--font-serif);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+.landing-section {
+  scroll-margin-top: 90px;
 }
 
 
-
-
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Final CTA composer layout matching the landing reference */
+.composer-cta {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: auto auto;
+  column-gap: 0.75rem;
+  row-gap: 0.75rem;
+  padding: 1rem !important;
+  border-radius: 1.75rem !important;
+  background: rgba(2, 8, 23, 0.92) !important;
+  border: 1px solid rgba(71, 85, 105, 0.72) !important;
+  box-shadow: 0 24px 70px rgba(2, 8, 23, 0.45) !important;
 }
 
-
-@theme {
-  --animate-float: float 3s ease-in-out infinite;
+.composer-cta > div:nth-child(1) {
+  grid-column: 1;
+  grid-row: 2;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-width: 0;
 }
 
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-8px); }
+.composer-cta > div:nth-child(1) > button {
+  height: 2.15rem;
+  padding: 0 0.7rem;
+  background: rgba(15, 23, 42, 0.78);
+  border-color: rgba(71, 85, 105, 0.8);
+  color: #e2e8f0;
 }
 
-@theme {
-  --animate-fade-up: fade-up 0.6s ease-out forwards;
+.composer-cta > div:nth-child(1)::after {
+  content: "Location helps refine results";
+  color: #94a3b8;
+  font-size: 0.75rem;
+  white-space: nowrap;
 }
 
-@keyframes fade-up {
-  from { opacity: 0; transform: translateY(24px); }
-  to { opacity: 1; transform: translateY(0); }
+.composer-cta > div:nth-child(2) {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  min-width: 0;
+  padding: 0 0.25rem 0.75rem;
+  border-bottom: 1px solid rgba(51, 65, 85, 0.72);
+}
+
+.composer-cta > div:nth-child(2) > input {
+  height: 2.2rem;
+  font-weight: 500;
+  font-size: 1rem;
+}
+
+.composer-cta > div:nth-child(2) > p {
+  display: none !important;
+}
+
+.composer-cta > button {
+  grid-column: 2;
+  grid-row: 2;
+  width: 2.35rem !important;
+  height: 2.35rem !important;
+  border-radius: 9999px !important;
+  background: #1e293b !important;
+  color: #94a3b8 !important;
+  box-shadow: none !important;
+}
+
+.composer-cta > button:not(:disabled) {
+  background: #24324a !important;
+  color: #e2e8f0 !important;
+}
+
+.composer-cta + .mt-3 {
+  margin-top: 0.9rem !important;
+}
+
+html.light .composer-cta {
+  background: rgba(255, 255, 255, 0.94) !important;
+  border-color: rgba(148, 163, 184, 0.55) !important;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.12) !important;
+}
+
+html.light .composer-cta > div:nth-child(1) > button {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #334155;
+}
+
+html.light .composer-cta > div:nth-child(1)::after {
+  color: #64748b;
+}
+
+html.light .composer-cta > div:nth-child(2) {
+  border-bottom-color: #e2e8f0;
+}
+
+html.light .composer-cta > button {
+  background: #e2e8f0 !important;
+  color: #64748b !important;
+}
+
+@media (max-width: 640px) {
+  .composer-cta {
+    grid-template-columns: minmax(0, 1fr) auto;
+    padding: 0.9rem !important;
+  }
+
+  .composer-cta > div:nth-child(1)::after {
+    display: none;
+  }
 }
