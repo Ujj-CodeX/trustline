@@ -73,6 +73,7 @@ export const ResourceCard: React.FC<ResourceCardProps> = ({
     return (
       <div
         id="top-recommended-resource-card"
+        data-translation-skip="true"
         className={`bg-white dark:bg-slate-900 rounded-xl p-5 md:p-6 shadow-sm border border-slate-200 dark:border-slate-800 ${leftBorderClass} transition-all`}
       >
         {/* Top Header with Recommended Label & Verified Badge */}
@@ -213,6 +214,7 @@ export const ResourceCard: React.FC<ResourceCardProps> = ({
   return (
     <div
       id={`resource-card-${resource.id || resource.name}`}
+      data-translation-skip="true"
       className="bg-white dark:bg-slate-900 rounded-xl p-4 md:p-5 shadow-xs border border-slate-200/80 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-slate-300 dark:hover:border-slate-700 transition-colors"
     >
       <div className="flex items-start gap-3">
@@ -228,7 +230,7 @@ export const ResourceCard: React.FC<ResourceCardProps> = ({
             {isVerified && (
               <span className="inline-flex items-center gap-1 px-2 py-0.2 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
                 <ShieldCheck className="w-3 h-3" />
-                Verified
+                {t("Verified")}
               </span>
             )}
           </div>
@@ -253,7 +255,7 @@ export const ResourceCard: React.FC<ResourceCardProps> = ({
 
           {resource.whatsapp && (
           <p className="text-[11px] text-green-600 dark:text-green-400 pt-0.5">
-           WhatsApp: {resource.whatsapp}
+           {t("WhatsApp")}: {resource.whatsapp}
           </p>
           )}
          {resource.available_24x7 !== undefined && resource.available_24x7 !== null && (

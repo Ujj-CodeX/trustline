@@ -20,12 +20,41 @@ type LanguageContextType = {
   translateTexts: (texts: string[]) => Promise<Record<string, string>>;
 };
 
+type DomValueState = {
+  original: string;
+  translated: string | null;
+};
+
 const LanguageContext = createContext<LanguageContextType | null>(null);
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
 
-const CACHE_KEY = "trustline_ui_translation_cache";
+const TRANSLATABLE_ATTRIBUTES = [
+  "title",
+  "placeholder",
+  "aria-label",
+  "aria-description",
+  "alt",
+];
+
+const TRANSLATION_SKIP_SELECTOR = [
+  "[data-translation-skip]",
+  "script",
+  "style",
+  "noscript",
+  "template",
+  "pre",
+  "code",
+  "option",
+  "svg",
+].join(",");
+
+const textNodeState = new WeakMap<Text, DomValueState>();
+const attributeState = new WeakMap<
+  Element,
+  Map<string, DomValueState>
+>();
 
 function safeStorageGet(key: string): string | null {
   if (typeof window === "undefined") return null;
@@ -45,6 +74,130 @@ function safeStorageSet(key: string, value: string): void {
   } catch {
     // Storage can be blocked by browser privacy settings.
   }
+}
+
+function normalizeText(value: string): string {
+  return value.trim().replace(/\s+/g, " ");
+}
+
+function isTranslatableText(value: string): boolean {
+  const normalized = normalizeText(value);
+
+  if (normalized.length < 2) {
+    return false;
+  }
+
+  // Do not translate the TrustLine brand.
+  if (normalized === "TrustLine") {
+    return false;
+  }
+
+  // Skip pure numbers/symbols while allowing multilingual Unicode text.
+  return /\p{L}/u.test(normalized);
+}
+
+function preserveWhitespace(
+  source: string,
+  translated: string
+): string {
+  const leading = source.match(/^\s*/)?.[0] || "";
+  const trailing = source.match(/\s*$/)?.[0] || "";
+
+  return leading + translated.trim() + trailing;
+}
+
+function isInsideSkippedRegion(
+  element: Element | null
+): boolean {
+  if (!element) {
+    return false;
+  }
+
+  return Boolean(
+    element.closest(TRANSLATION_SKIP_SELECTOR)
+  );
+}
+
+function buildReverseTranslationMap(
+  cache: Record<string, string>
+): Map<string, string> {
+  const reverse = new Map<string, string>();
+
+  Object.entries(cache).forEach(
+    ([original, translated]) => {
+      const normalizedTranslated =
+        normalizeText(translated);
+
+      if (
+        normalizedTranslated &&
+        normalizedTranslated !== normalizeText(original) &&
+        !reverse.has(normalizedTranslated)
+      ) {
+        reverse.set(normalizedTranslated, original);
+      }
+    }
+  );
+
+  return reverse;
+}
+
+function resolveDomValueState(
+  currentValue: string,
+  state: DomValueState | undefined,
+  reverseTranslations: Map<string, string>,
+  languageCache: Record<string, string>
+): DomValueState {
+  if (!state) {
+    const reverseOriginal = reverseTranslations.get(
+      normalizeText(currentValue)
+    );
+
+    if (reverseOriginal) {
+      return {
+        original: reverseOriginal,
+        translated: currentValue,
+      };
+    }
+
+    return {
+      original: currentValue,
+      translated: null,
+    };
+  }
+
+  if (
+    currentValue === state.original ||
+    currentValue === state.translated
+  ) {
+    return state;
+  }
+
+  const cachedTranslation =
+    languageCache[state.original];
+
+  if (
+    cachedTranslation &&
+    normalizeText(currentValue) ===
+      normalizeText(cachedTranslation)
+  ) {
+    state.translated = currentValue;
+    return state;
+  }
+
+  const reverseOriginal = reverseTranslations.get(
+    normalizeText(currentValue)
+  );
+
+  if (reverseOriginal) {
+    state.original = reverseOriginal;
+    state.translated = currentValue;
+    return state;
+  }
+
+  // React rendered a genuinely new string into this node.
+  state.original = currentValue;
+  state.translated = null;
+  return state;
 }
 
 export function LanguageProvider({
@@ -74,10 +227,6 @@ export function LanguageProvider({
 
   useEffect(() => {
     cacheRef.current = cache;
-
-    // Keep this cache in memory for the active session.
-    // Persisting it to browser storage is intentionally avoided.
-    void CACHE_KEY;
   }, [cache]);
 
   const changeLang = useCallback((newLang: string) => {
@@ -127,7 +276,7 @@ export function LanguageProvider({
 
       try {
         const response = await fetch(
-          `${API_URL}/api/translate-ui/`,
+          API_URL + "/api/translate-ui/",
           {
             method: "POST",
             headers: {
@@ -142,15 +291,18 @@ export function LanguageProvider({
         );
 
         if (!response.ok) {
-          const errorText = await response.text();
+          const errorBody = await response.text();
 
-        console.error("UI translation error:", {
-           status: response.status,
-           body: errorText,
-          });
+          console.error(
+            "[TrustLine] UI translation API error:",
+            {
+              status: response.status,
+              body: errorBody,
+            }
+          );
 
-        throw new Error(
-          `UI translation failed: ${response.status}`
+          throw new Error(
+            "UI translation failed: " + response.status
           );
         }
 
@@ -228,6 +380,325 @@ export function LanguageProvider({
     },
     [lang, cache]
   );
+
+  /*
+   * Universal UI translation layer.
+   *
+   * This observes the rendered DOM instead of requiring every page/component
+   * to manually wrap every string with t(). Any newly added page with normal
+   * static UI text automatically participates in the active language.
+   *
+   * Dynamic content that is already localized by the backend (for example
+   * chat replies and resource data) can opt out with data-translation-skip.
+   */
+  useEffect(() => {
+    if (typeof window === "undefined" || !document.body) {
+      return;
+    }
+
+    let disposed = false;
+    let animationFrame = 0;
+    let running = false;
+    let pending = false;
+
+    const syncDomTranslations = async () => {
+      if (disposed || !document.body) {
+        return;
+      }
+
+      const languageCache =
+        cacheRef.current[lang] || {};
+      const reverseTranslations =
+        buildReverseTranslationMap(languageCache);
+
+      const textNodesByOriginal = new Map<
+        string,
+        Text[]
+      >();
+
+      const attributeTargets = new Map<
+        string,
+        Array<{
+          element: Element;
+          attribute: string;
+        }>
+      >();
+
+      const addTextNode = (node: Text) => {
+        const parent = node.parentElement;
+
+        if (
+          !parent ||
+          isInsideSkippedRegion(parent)
+        ) {
+          return;
+        }
+
+        const currentValue = node.nodeValue || "";
+
+        if (!isTranslatableText(currentValue)) {
+          return;
+        }
+
+        const state = resolveDomValueState(
+          currentValue,
+          textNodeState.get(node),
+          reverseTranslations,
+          languageCache
+        );
+
+        textNodeState.set(node, state);
+
+        if (lang === "en") {
+          if (node.nodeValue !== state.original) {
+            node.nodeValue = state.original;
+          }
+          state.translated = null;
+          return;
+        }
+
+        const existing = textNodesByOriginal.get(
+          state.original
+        );
+
+        if (existing) {
+          existing.push(node);
+        } else {
+          textNodesByOriginal.set(
+            state.original,
+            [node]
+          );
+        }
+      };
+
+      const walker = document.createTreeWalker(
+        document.body,
+        NodeFilter.SHOW_TEXT
+      );
+
+      let currentNode = walker.nextNode();
+
+      while (currentNode) {
+        addTextNode(currentNode as Text);
+        currentNode = walker.nextNode();
+      }
+
+      const elements =
+        document.body.querySelectorAll("*");
+
+      elements.forEach((element) => {
+        if (isInsideSkippedRegion(element)) {
+          return;
+        }
+
+        let states = attributeState.get(element);
+
+        if (!states) {
+          states = new Map();
+          attributeState.set(element, states);
+        }
+
+        TRANSLATABLE_ATTRIBUTES.forEach(
+          (attribute) => {
+            const currentValue =
+              element.getAttribute(attribute);
+
+            if (
+              currentValue === null ||
+              !isTranslatableText(currentValue)
+            ) {
+              return;
+            }
+
+            const state =
+              resolveDomValueState(
+                currentValue,
+                states!.get(attribute),
+                reverseTranslations,
+                languageCache
+              );
+
+            states!.set(attribute, state);
+
+            if (lang === "en") {
+              if (
+                element.getAttribute(attribute) !==
+                state.original
+              ) {
+                element.setAttribute(
+                  attribute,
+                  state.original
+                );
+              }
+              state.translated = null;
+              return;
+            }
+
+            const key = state.original;
+            const existing =
+              attributeTargets.get(key);
+
+            if (existing) {
+              existing.push({
+                element,
+                attribute,
+              });
+            } else {
+              attributeTargets.set(key, [
+                { element, attribute },
+              ]);
+            }
+          }
+        );
+      });
+
+      if (lang === "en") {
+        return;
+      }
+
+      const originals = Array.from(
+        new Set([
+          ...textNodesByOriginal.keys(),
+          ...attributeTargets.keys(),
+        ])
+      );
+
+      if (!originals.length) {
+        return;
+      }
+
+      const translated =
+        await translateTexts(originals);
+
+      if (disposed) {
+        return;
+      }
+
+      textNodesByOriginal.forEach(
+        (nodes, original) => {
+          const translatedValue =
+            translated[original] || original;
+
+          nodes.forEach((node) => {
+            const state = textNodeState.get(node);
+
+            if (!state) {
+              return;
+            }
+
+            state.translated =
+              translatedValue;
+
+            const nextValue =
+              preserveWhitespace(
+                state.original,
+                translatedValue
+              );
+
+            if (node.nodeValue !== nextValue) {
+              node.nodeValue = nextValue;
+            }
+          });
+        }
+      );
+
+      attributeTargets.forEach(
+        (targets, original) => {
+          const translatedValue =
+            translated[original] || original;
+
+          targets.forEach(
+            ({ element, attribute }) => {
+              const states =
+                attributeState.get(element);
+              const state =
+                states?.get(attribute);
+
+              if (!state) {
+                return;
+              }
+
+              state.translated =
+                translatedValue;
+
+              const nextValue =
+                preserveWhitespace(
+                  state.original,
+                  translatedValue
+                );
+
+              if (
+                element.getAttribute(attribute) !==
+                nextValue
+              ) {
+                element.setAttribute(
+                  attribute,
+                  nextValue
+                );
+              }
+            }
+          );
+        }
+      );
+    };
+
+    const schedule = () => {
+      if (
+        disposed ||
+        animationFrame
+      ) {
+        return;
+      }
+
+      animationFrame =
+        window.requestAnimationFrame(() => {
+          animationFrame = 0;
+
+          if (running) {
+            pending = true;
+            return;
+          }
+
+          running = true;
+
+          void syncDomTranslations()
+            .finally(() => {
+              running = false;
+
+              if (pending && !disposed) {
+                pending = false;
+                schedule();
+              }
+            });
+        });
+    };
+
+    const observer =
+      new MutationObserver(() => {
+        schedule();
+      });
+
+    observer.observe(document.body, {
+      childList: true,
+      characterData: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: TRANSLATABLE_ATTRIBUTES,
+    });
+
+    schedule();
+
+    return () => {
+      disposed = true;
+      observer.disconnect();
+
+      if (animationFrame) {
+        window.cancelAnimationFrame(
+          animationFrame
+        );
+      }
+    };
+  }, [lang, translateTexts]);
 
   return (
     <LanguageContext.Provider

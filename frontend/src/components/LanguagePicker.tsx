@@ -65,6 +65,7 @@ export function LanguagePicker() {
   return (
     <div
       ref={pickerRef}
+      data-translation-skip="true"
       className="fixed bottom-14 right-4 z-[60]"
     >
       <div className="relative">
