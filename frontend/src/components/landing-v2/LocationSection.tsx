@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Globe,
   Building2,
@@ -12,6 +12,7 @@ import {
 
 import { useLanguage } from "@/lib/LanguageContext";
 import ScrollReveal from "./ScrollReveal";
+import { useTheme } from "./ThemeContext";
 
 interface LocationScope {
   tier: "GLOBAL" | "COUNTRY" | "STATE" | "DISTRICT";
@@ -55,28 +56,8 @@ export default function LocationSection() {
   const [selectedTier, setSelectedTier] =
     useState<LocationScope["tier"]>("DISTRICT");
 
-  const [isDark, setIsDark] = useState(false);
-
   const { t } = useLanguage();
-
-  useEffect(() => {
-    const updateTheme = () => {
-      setIsDark(
-        document.documentElement.classList.contains("dark")
-      );
-    };
-
-    updateTheme();
-
-    const observer = new MutationObserver(updateTheme);
-
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["class"],
-    });
-
-    return () => observer.disconnect();
-  }, []);
+  const { isDark } = useTheme();
 
   const currentScope =
     LOCATION_SCOPES.find(
@@ -306,7 +287,11 @@ export default function LocationSection() {
                     {t("SUPPORT SCOPE")}
                   </span>
 
-                  <span className="font-mono text-[10px] font-semibold text-teal-600 dark:text-teal-300 sm:text-[11px]">
+                  <span
+                  className={`font-mono text-[10px] font-semibold sm:text-[11px] ${
+                    isDark ? "text-teal-300" : "text-teal-600"
+                  }`}
+                >
                     {t("Global → local")}
                   </span>
                 </div>
@@ -424,7 +409,11 @@ export default function LocationSection() {
                 ].join(" ")}
               >
                 {t("Active Tier Scope:")}{" "}
-                <span className="font-semibold text-teal-600 dark:text-teal-300">
+                <span
+                  className={`font-semibold ${
+                    isDark ? "text-teal-300" : "text-teal-600"
+                  }`}
+                >
                   {t(currentScope.detail)}
                 </span>
               </div>
