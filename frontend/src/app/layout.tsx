@@ -1,12 +1,12 @@
 "use client";
 
 import { Geist, Geist_Mono } from "next/font/google";
-import { useEffect } from "react";
 import "./globals.css";
+
 import { LanguageProvider } from "@/lib/LanguageContext";
 import { LanguagePicker } from "@/components/LanguagePicker";
 import { ThemeProvider } from "@/components/landing-v2/ThemeContext";
-
+import ThemeToggle from "@/components/landing-v2/ThemeToggle";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,31 +23,23 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("trustline_theme");
-
-    const isDark =
-      savedTheme === "dark" ||
-      (!savedTheme &&
-        window.matchMedia("(prefers-color-scheme: dark)").matches);
-
-    document.documentElement.classList.toggle("dark", isDark);
-  }, []);
-
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-  <ThemeProvider>
-    <LanguageProvider>
-      {children}
-      <LanguagePicker />
-    </LanguageProvider>
-  </ThemeProvider>
-</body>
+        <ThemeProvider>
+          <LanguageProvider>
+            {children}
+
+            {/* Universal controls */}
+            <LanguagePicker />
+            <ThemeToggle variant="floating" />
+          </LanguageProvider>
+        </ThemeProvider>
+      </body>
     </html>
   );
 }
-

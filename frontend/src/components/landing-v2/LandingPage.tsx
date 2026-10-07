@@ -40,7 +40,7 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#030712] text-white overflow-x-clip">
+    <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-[#030712] dark:text-white overflow-x-clip transition-colors duration-300">
       <header className="fixed top-0 left-0 right-0 z-[60]">
         <EmergencyBar />
         <Navbar onFindHelpClick={handleFindHelpClick} />
@@ -57,7 +57,7 @@ export default function LandingPage() {
 
         <FinalCTA onRouteSubmit={handleRouteSubmit} />
         <Footer  />
-
+ 
         {/* Step 5 onwards will go here */}
       </main>
     </div>

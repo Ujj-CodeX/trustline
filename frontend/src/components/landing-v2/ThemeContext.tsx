@@ -1,6 +1,14 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+"use client";
 
-type Theme = 'dark' | 'light';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from "react";
+
+type Theme = "dark" | "light";
 
 interface ThemeContextType {
   theme: Theme;
@@ -8,37 +16,59 @@ interface ThemeContextType {
   isDark: boolean;
 }
 
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+const ThemeContext =
+  createContext<ThemeContextType | undefined>(undefined);
 
-export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const ThemeProvider = ({
+  children,
+}: {
+  children: ReactNode;
+}) => {
   const [theme, setTheme] = useState<Theme>(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('trustline_theme');
-      if (stored === 'light' || stored === 'dark') {
+    if (typeof window !== "undefined") {
+      const stored =
+        localStorage.getItem("trustline_theme");
+
+      if (stored === "light" || stored === "dark") {
         return stored;
       }
     }
-    return 'dark'; // TrustLine default is premium dark
+
+    // ZIP behavior: TrustLine defaults to dark.
+    return "dark";
   });
 
   useEffect(() => {
     const root = document.documentElement;
-    if (theme === 'light') {
-      root.classList.add('light');
-      root.classList.remove('dark');
+
+    if (theme === "light") {
+      root.classList.add("light");
+      root.classList.remove("dark");
     } else {
-      root.classList.add('dark');
-      root.classList.remove('light');
+      root.classList.add("dark");
+      root.classList.remove("light");
     }
-    localStorage.setItem('trustline_theme', theme);
+
+    localStorage.setItem(
+      "trustline_theme",
+      theme
+    );
   }, [theme]);
 
   const toggleTheme = () => {
-    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+    setTheme((previous) =>
+      previous === "dark" ? "light" : "dark"
+    );
   };
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, isDark: theme === 'dark' }}>
+    <ThemeContext.Provider
+      value={{
+        theme,
+        toggleTheme,
+        isDark: theme === "dark",
+      }}
+    >
       {children}
     </ThemeContext.Provider>
   );
@@ -46,8 +76,12 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
 export const useTheme = () => {
   const context = useContext(ThemeContext);
+
   if (!context) {
-    throw new Error('useTheme must be used within a ThemeProvider');
+    throw new Error(
+      "useTheme must be used within a ThemeProvider"
+    );
   }
+
   return context;
 };
