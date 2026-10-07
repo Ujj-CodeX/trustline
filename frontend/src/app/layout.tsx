@@ -1,7 +1,6 @@
 "use client";
 
 import { Geist, Geist_Mono } from "next/font/google";
-import { useEffect } from "react";
 import "./globals.css";
 import { LanguageProvider } from "@/lib/LanguageContext";
 import { LanguagePicker } from "@/components/LanguagePicker";
@@ -23,17 +22,6 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("trustline_theme");
-
-    const isDark =
-      savedTheme === "dark" ||
-      (!savedTheme &&
-        window.matchMedia("(prefers-color-scheme: dark)").matches);
-
-    document.documentElement.classList.toggle("dark", isDark);
-  }, []);
-
   return (
     <html
       lang="en"
