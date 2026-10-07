@@ -25,24 +25,33 @@ export default function FinalCTA({
     <section
       id="about"
       className={[
-        "landing-section relative overflow-hidden border-t py-16 transition-colors duration-300 sm:py-24 md:py-28",
+        "landing-section relative overflow-hidden border-t py-20 transition-colors duration-300 sm:py-24 md:py-28",
         isDark
-          ? "border-slate-900 bg-[#030713]"
+          ? "border-slate-900"
           : "border-slate-200 bg-[#f7f5ef]",
       ].join(" ")}
     >
-      {/* Ambient glow */}
+      {/* Reference-style cinematic CTA background */}
       <div
-        className="pointer-events-none absolute inset-0 z-0 opacity-30"
+        className="pointer-events-none absolute inset-0 z-0"
         style={{
           background: isDark
-            ? "radial-gradient(circle at 50% 50%, rgba(20,38,86,0.4) 0%, transparent 70%)"
-            : "radial-gradient(circle at 50% 50%, rgba(214,230,255,0.5) 0%, transparent 70%)",
+            ? "linear-gradient(180deg, #03091b 0%, #091535 42%, #172657 72%, #72505b 100%)"
+            : "linear-gradient(180deg, #eef4ff 0%, #f3f6ff 48%, #f7ecea 100%)",
+        }}
+        aria-hidden="true"
+      />
+      <div
+        className="pointer-events-none absolute inset-0 z-0 opacity-40"
+        style={{
+          background: isDark
+            ? "radial-gradient(ellipse 70% 45% at 50% 92%, rgba(210,150,137,0.28) 0%, rgba(93,68,86,0.16) 38%, transparent 75%)"
+            : "radial-gradient(ellipse 70% 45% at 50% 92%, rgba(214,180,170,0.20) 0%, transparent 72%)",
         }}
         aria-hidden="true"
       />
 
-      <div className="relative z-10 mx-auto max-w-4xl px-4 text-center sm:px-6">
+      <div className="relative z-10 mx-auto max-w-5xl px-4 text-center sm:px-6">
         {/* Kicker */}
         <ScrollReveal direction="down">
           <div className={`mb-4 inline-flex items-center gap-2 rounded-full border border-teal-500/30 bg-teal-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider ${
@@ -60,7 +69,7 @@ export default function FinalCTA({
         <ScrollReveal delay={0.06}>
           <h2
             className={[
-              "mb-3 text-balance text-2xl font-bold leading-tight tracking-tight sm:mb-4 sm:text-5xl md:text-6xl",
+              "mb-4 text-balance text-3xl font-bold leading-tight tracking-tight sm:mb-4 sm:text-5xl md:text-[4.25rem] md:leading-[1.05]",
               isDark
                 ? "text-white"
                 : "text-slate-900",
@@ -76,7 +85,7 @@ export default function FinalCTA({
         <ScrollReveal delay={0.12}>
           <p
             className={[
-              "mx-auto mb-7 max-w-xl text-balance text-xs font-normal leading-relaxed sm:mb-10 sm:text-base md:text-lg",
+              "mx-auto mb-8 max-w-2xl text-balance text-sm font-normal leading-relaxed sm:mb-10 sm:text-base md:text-lg",
               isDark
                 ? "text-slate-200/90"
                 : "text-slate-600",
@@ -93,6 +102,7 @@ export default function FinalCTA({
           <div className="w-full">
             <Composer
               onRouteSubmit={onRouteSubmit}
+              variant="cta"
             />
           </div>
         </ScrollReveal>
