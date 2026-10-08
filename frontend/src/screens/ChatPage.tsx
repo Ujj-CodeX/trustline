@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import {
   Send,
   Lock,
@@ -8,6 +8,8 @@ import {
   AlertCircle,
   HelpCircle,
   ShieldCheck,
+  SlidersHorizontal,
+  ChevronUp,
 }from "lucide-react";
 import { ChatBubble } from "@/components/ChatBubble";
 import { ResourceCard } from "@/components/ResourceCard";
@@ -43,6 +45,11 @@ export const ChatPage: React.FC<ChatPageProps> = ({
   const [currentExtracted, setCurrentExtracted] = useState<ExtractedIntent | null>(null);
   const [currentResources, setCurrentResources] = useState<ResourceItem[]>([]);
   const [backendNotice, setBackendNotice] = useState<string | null>(null);
+  const [resourceSort, setResourceSort] = useState<
+    "recommended" | "verified" | "24_7" | "name"
+  >("recommended");
+  const [visibleOtherResources, setVisibleOtherResources] = useState(4);
+  const [isSortOpen, setIsSortOpen] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const hasTriggeredInitialQuery = useRef(false);
@@ -102,6 +109,9 @@ export const ChatPage: React.FC<ChatPageProps> = ({
 
     setCurrentExtracted(data.extracted || null);
     setCurrentResources(data.resources || []);
+    setResourceSort("recommended");
+    setVisibleOtherResources(4);
+    setIsSortOpen(false);
 
     if (error) {
       setBackendNotice("Could not reach the backend. Please try again.");
@@ -155,7 +165,79 @@ export const ChatPage: React.FC<ChatPageProps> = ({
   }, [messages, currentResources]);
 
   const topResource = currentResources.length > 0 ? currentResources[0] : null;
-  const otherResources = currentResources.length > 1 ? currentResources.slice(1) : [];
+  const otherResources =
+    currentResources.length > 1 ? currentResources.slice(1) : [];
+
+  const sortedOtherResources = useMemo(() => {
+    const resources = [...otherResources];
+
+    if (resourceSort === "recommended") {
+      return resources;
+    }
+
+    if (resourceSort === "verified") {
+      return resources
+        .map((resource, index) => ({ resource, index }))
+        .sort((a, b) => {
+          const aVerified =
+            a.resource.verification_status === "verified_web" ||
+            a.resource.verification_status === "verified_authority" ||
+            a.resource.is_india_db === true ||
+            a.resource.country?.toLowerCase() === "india" ||
+            Boolean(a.resource.phone || a.resource.priority);
+          const bVerified =
+            b.resource.verification_status === "verified_web" ||
+            b.resource.verification_status === "verified_authority" ||
+            b.resource.is_india_db === true ||
+            b.resource.country?.toLowerCase() === "india" ||
+            Boolean(b.resource.phone || b.resource.priority);
+
+          return Number(bVerified) - Number(aVerified) || a.index - b.index;
+        })
+        .map(({ resource }) => resource);
+    }
+
+    if (resourceSort === "24_7") {
+      return resources
+        .map((resource, index) => ({ resource, index }))
+        .sort((a, b) => {
+          const a24x7 =
+            a.resource.available_24x7 === true ||
+            a.resource.availability?.toLowerCase().includes("24/7");
+          const b24x7 =
+            b.resource.available_24x7 === true ||
+            b.resource.availability?.toLowerCase().includes("24/7");
+
+          return Number(b24x7) - Number(a24x7) || a.index - b.index;
+        })
+        .map(({ resource }) => resource);
+    }
+
+    return resources
+      .map((resource, index) => ({ resource, index }))
+      .sort((a, b) => {
+        const aName = (
+          a.resource.name ||
+          a.resource.title ||
+          ""
+        ).toLocaleLowerCase();
+        const bName = (
+          b.resource.name ||
+          b.resource.title ||
+          ""
+        ).toLocaleLowerCase();
+
+        return aName.localeCompare(bName) || a.index - b.index;
+      })
+      .map(({ resource }) => resource);
+  }, [otherResources, resourceSort]);
+
+  const displayedOtherResources = sortedOtherResources.slice(
+    0,
+    visibleOtherResources
+  );
+  const hasMoreOtherResources =
+    visibleOtherResources < sortedOtherResources.length;
 
   const guidanceTips = [
   "Keep relevant information or records safe for future reference.",
@@ -425,34 +507,172 @@ const getGeoLocation = async (): Promise<{ country: string; state: string; distr
           {/* Other Useful Resources List */}
           {otherResources.length > 0 && (
             <div
-            className={
-              "pt-5 space-y-3 border-t " +
-              (isDark ? "border-slate-800" : "border-slate-200")
-            }
-          >
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                  Other Useful Resources
-                </h3>
-                <span className="text-xs font-semibold text-teal-700 dark:text-teal-400 cursor-pointer hover:underline">
-                  View all ({otherResources.length})
-                </span>
+              className={
+                "pt-5 space-y-3 border-t " +
+                (isDark ? "border-slate-800" : "border-slate-200")
+              }
+            >
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                    Other Useful Resources
+                  </h3>
+                  <p
+                    className={
+                      "mt-0.5 text-[11px] " +
+                      (isDark ? "text-slate-500" : "text-slate-500")
+                    }
+                  >
+                    Showing {Math.min(visibleOtherResources, sortedOtherResources.length)} of {sortedOtherResources.length} additional resources
+                  </p>
+                </div>
+
+                <div className="relative self-start sm:self-auto">
+                  <button
+                    type="button"
+                    onClick={() => setIsSortOpen((previous) => !previous)}
+                    className={
+                      "inline-flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold transition-colors " +
+                      (isDark
+                        ? "bg-slate-900/70 border-slate-700 text-slate-200 hover:bg-slate-800"
+                        : "bg-white border-slate-300 text-slate-700 hover:bg-slate-50")
+                    }
+                  >
+                    <SlidersHorizontal className="w-3.5 h-3.5 text-teal-500" />
+                    <span>
+                      {resourceSort === "recommended"
+                        ? "Recommended"
+                        : resourceSort === "verified"
+                          ? "Verified first"
+                          : resourceSort === "24_7"
+                            ? "24/7 first"
+                            : "Name A–Z"}
+                    </span>
+                    <ChevronDown
+                      className={
+                        "w-3.5 h-3.5 transition-transform " +
+                        (isSortOpen ? "rotate-180" : "")
+                      }
+                    />
+                  </button>
+
+                  {isSortOpen && (
+                    <>
+                      <div
+                        className="fixed inset-0 z-40"
+                        onClick={() => setIsSortOpen(false)}
+                      />
+                      <div
+                        className={
+                          "absolute right-0 top-full mt-2 z-50 w-44 overflow-hidden rounded-2xl border p-1 shadow-2xl " +
+                          (isDark
+                            ? "bg-[#071127] border-slate-700"
+                            : "bg-white border-slate-200")
+                        }
+                      >
+                        {[
+                          ["recommended", "Recommended"],
+                          ["verified", "Verified first"],
+                          ["24_7", "24/7 first"],
+                          ["name", "Name A–Z"],
+                        ].map(([value, label]) => (
+                          <button
+                            key={value}
+                            type="button"
+                            onClick={() => {
+                              setResourceSort(
+                                value as
+                                  | "recommended"
+                                  | "verified"
+                                  | "24_7"
+                                  | "name"
+                              );
+                              setVisibleOtherResources(4);
+                              setIsSortOpen(false);
+                            }}
+                            className={
+                              "w-full rounded-xl px-3 py-2.5 text-left text-xs font-medium transition-colors " +
+                              (resourceSort === value
+                                ? isDark
+                                  ? "bg-teal-950/50 text-teal-300"
+                                  : "bg-teal-50 text-teal-700"
+                                : isDark
+                                  ? "text-slate-300 hover:bg-slate-800"
+                                  : "text-slate-700 hover:bg-slate-100")
+                            }
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
 
               <div className="space-y-2.5">
-                {otherResources.map((res, index) => (
+                {displayedOtherResources.map((res, index) => (
                   <div
                     key={res.id || index}
                     data-translation-skip="true"
                   >
                     <ResourceCard
                       resource={res}
-                      urgencyTier={currentExtracted?.urgency_tier as UrgencyTier || "general"}
+                      urgencyTier={
+                        currentExtracted?.urgency_tier as UrgencyTier ||
+                        "general"
+                      }
                       isTopRecommended={false}
                     />
                   </div>
                 ))}
               </div>
+
+              {hasMoreOtherResources && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setVisibleOtherResources(
+                      (count) =>
+                        Math.min(
+                          count + 5,
+                          sortedOtherResources.length
+                        )
+                    )
+                  }
+                  className={
+                    "w-full flex items-center justify-center gap-2 rounded-2xl border px-4 py-3.5 text-xs font-semibold transition-all " +
+                    (isDark
+                      ? "bg-slate-900/70 border-slate-700 text-teal-300 hover:bg-slate-800"
+                      : "bg-white border-slate-300 text-teal-700 hover:bg-slate-50")
+                  }
+                >
+                  <span>
+                    Show {Math.min(
+                      5,
+                      sortedOtherResources.length -
+                        visibleOtherResources
+                    )} more contacts
+                  </span>
+                  <ChevronDown className="w-4 h-4" />
+                </button>
+              )}
+
+              {!hasMoreOtherResources && sortedOtherResources.length > 4 && (
+                <button
+                  type="button"
+                  onClick={() => setVisibleOtherResources(4)}
+                  className={
+                    "w-full flex items-center justify-center gap-2 rounded-2xl px-4 py-2 text-xs font-semibold transition-colors " +
+                    (isDark
+                      ? "text-slate-400 hover:text-slate-200"
+                      : "text-slate-500 hover:text-slate-800")
+                  }
+                >
+                  <ChevronUp className="w-4 h-4" />
+                  <span>Show fewer contacts</span>
+                </button>
+              )}
             </div>
           )}
 
