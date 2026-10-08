@@ -1,4 +1,5 @@
-import { ChatSessionView } from "@/screens/ChatSessionView";
+import { ChatPage } from "@/screens/ChatPage";
+import { DEFAULT_COUNTRIES } from "@/lib/countries";
 
 async function getSession(slug: string) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/chat/${slug}/`, {
@@ -30,5 +31,11 @@ export default async function ChatSessionPage({ params }: { params: Promise<{ sl
     return <div className="p-10 text-center">Session not found.</div>;
   }
 
-  return <ChatSessionView session={session} slug={slug} />;
+  return (
+    <ChatPage
+      initialSession={session}
+      selectedCountry={session.extracted?.country || ""}
+      countries={DEFAULT_COUNTRIES}
+    />
+  );
 }

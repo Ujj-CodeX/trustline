@@ -19,7 +19,7 @@ interface TrustCardProps {
   title: string;
   description: string;
   children?: React.ReactNode;
-  highlighted?: boolean;
+  featured?: boolean;
   isDark: boolean;
 }
 
@@ -29,21 +29,17 @@ function TrustCard({
   title,
   description,
   children,
-  highlighted = false,
+  featured = false,
   isDark,
 }: TrustCardProps) {
   return (
     <div
       className={[
-        "h-full rounded-2xl border-2 p-4 sm:p-6",
-        highlighted
-          ? isDark
-            ? "border-teal-500/40 bg-gradient-to-b from-[#091636] to-[#061026] shadow-lg shadow-teal-950/30"
-            : "border-teal-500 bg-white shadow-[0_14px_35px_-5px_rgba(13,148,136,0.22)] ring-1 ring-teal-500/20"
-          : isDark
-            ? "border-slate-800 bg-[#050d18] hover:border-slate-700"
-            : "border-slate-300 bg-white shadow-[0_8px_25px_-5px_rgba(15,23,42,0.1)] hover:border-slate-400",
-        "transition-all duration-300",
+        "group h-full rounded-2xl border-2 p-4 sm:p-6",
+        isDark
+          ? "border-slate-800 bg-[#050d18] hover:-translate-y-1 hover:border-teal-500/70 hover:bg-gradient-to-b hover:from-[#091636] hover:to-[#061026] hover:shadow-lg hover:shadow-teal-950/30 focus-within:border-teal-500/70 focus-within:shadow-lg focus-within:shadow-teal-950/30"
+          : "border-slate-300 bg-white shadow-[0_8px_25px_-5px_rgba(15,23,42,0.1)] hover:-translate-y-1 hover:border-teal-500 hover:shadow-[0_14px_35px_-5px_rgba(13,148,136,0.22)] focus-within:border-teal-500 focus-within:shadow-[0_14px_35px_-5px_rgba(13,148,136,0.22)]",
+        "transition-all duration-300 ease-out",
       ].join(" ")}
     >
       <div className="flex h-full flex-col justify-between">
@@ -51,18 +47,18 @@ function TrustCard({
           <div className="mb-4 flex items-center justify-between sm:mb-6">
             <div
               className={[
-                "flex h-8 w-8 items-center justify-center rounded-lg text-teal-500",
-                highlighted
+                "flex h-8 w-8 items-center justify-center rounded-lg text-teal-500 transition-all duration-300 group-hover:border-teal-500/60 group-hover:bg-teal-500/10",
+                featured
                   ? "border border-teal-400/40 bg-teal-500/20"
                   : isDark
-                    ? "border border-slate-700/80 bg-slate-900"
-                    : "border border-slate-300 bg-slate-100",
+                    ? "border border-slate-700/80 bg-slate-900 group-hover:border-teal-500/50"
+                    : "border border-slate-300 bg-slate-100 group-hover:border-teal-500/50",
               ].join(" ")}
             >
               {icon}
             </div>
 
-            {highlighted ? (
+            {featured ? (
               <span
                 className={[
                   "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold sm:text-[11px]",
@@ -208,7 +204,7 @@ export default function TrustSection() {
           >
             <TrustCard
               number="02"
-              highlighted
+              featured
               icon={<ShieldCheck className="h-4 w-4" />}
               title={t("Use verified support data")}
               description={t(

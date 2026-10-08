@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect } from "react";
 import { Phone, ExternalLink, ShieldCheck, MapPin, Globe, FileText, Star, MessageCircle, Clock } from "lucide-react";
 import { ResourceItem, UrgencyTier } from "@/types";

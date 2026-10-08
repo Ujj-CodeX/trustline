@@ -24,7 +24,7 @@ export default function Composer({
   // Backend expects the country NAME ("India", "United States", ...), not the ISO code.
   // India is shown by default for the UI, but it is not treated as an
   // explicitly selected country until the user actually chooses one.
-  const [selectedCountry, setSelectedCountry] = useState("India");
+  const [selectedCountry, setSelectedCountry] = useState("");
   const [hasManualCountrySelection, setHasManualCountrySelection] =
     useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -90,7 +90,7 @@ export default function Composer({
           >
             <span className="text-lg">{currentCountry.flag}</span>
             <span className="truncate max-w-[130px]">
-              {currentCountry.name}
+              {selectedCountry ? currentCountry.name : t("Select country")}
             </span>
             <ChevronDown
               className={`w-3.5 h-3.5 shrink-0 ${
@@ -202,8 +202,8 @@ export default function Composer({
             onClick={() => handleSuggestion(suggestion)}
             className={`text-left text-[11px] sm:text-xs px-2.5 sm:px-3 py-1.5 rounded-full border transition-all duration-150 cursor-pointer active:scale-95 ${
               isDark
-                ? "bg-slate-900/80 hover:bg-slate-800 border-slate-700/80 text-slate-300 hover:text-white"
-                : "bg-white hover:bg-teal-50/50 border-slate-300 text-slate-800 hover:text-teal-900 shadow-sm"
+                ? "bg-slate-900/80 hover:bg-red-500/10 hover:border-red-400/70 border-slate-700/80 text-slate-300 hover:text-red-300"
+                : "bg-white hover:bg-red-50 hover:border-red-300 border-slate-300 text-slate-800 hover:text-red-600 shadow-sm"
             }`}
           >
             {t(suggestion)}
