@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import {
   Send,
   Lock,
@@ -21,7 +22,6 @@ interface ChatPageProps {
   initialQuery?: string;
   selectedCountry: string;
   resumeFromStorage?: boolean;
-  onNavigate: (path: string) => void;
   countries: CountryOption[];
 
 }
@@ -30,9 +30,9 @@ export const ChatPage: React.FC<ChatPageProps> = ({
   initialQuery = "",
   selectedCountry,
   resumeFromStorage = false,
-  onNavigate,
   countries,
 }) => {
+  const router = useRouter();
   const [localCountry, setLocalCountry] = useState(selectedCountry);
 
   const { isDark } = useTheme();
@@ -230,7 +230,7 @@ const getGeoLocation = async (): Promise<{ country: string; state: string; distr
       <div className="mb-6 sm:mb-8 flex items-center justify-between gap-4">
         <button
           type="button"
-          onClick={() => onNavigate("/")}
+          onClick={() => router.push("/")}
           className={
             "inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-xs font-semibold " +
             "backdrop-blur-md transition-all cursor-pointer " +
