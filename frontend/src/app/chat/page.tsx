@@ -1,21 +1,24 @@
-"use client";
-import { useSearchParams } from "next/navigation";
 import { ChatPage } from "@/screens/ChatPage";
 import { DEFAULT_COUNTRIES } from "@/lib/countries";
 
-export default function Page() {
-  const searchParams = useSearchParams();
-  const query = searchParams.get("q") || "";
-  const country = searchParams.get("country") || "";
-  const resume = searchParams.get("resume") === "true";
+type SearchParams = Record<string, string | string[] | undefined>;
+
+function getParam(value: string | string[] | undefined): string {
+  return Array.isArray(value) ? value[0] ?? "" : value ?? "";
+}
+
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>;
+}) {
+  const params = await searchParams;
 
   return (
     <ChatPage
-      initialQuery={query}
-      selectedCountry={country}
-      resumeFromStorage={resume}
-      
-      onNavigate={(path) => { window.location.href = path; }}
+      initialQuery={getParam(params.q)}
+      selectedCountry={getParam(params.country)}
+      resumeFromStorage={getParam(params.resume) === "true"}
       countries={DEFAULT_COUNTRIES}
     />
   );
