@@ -35,9 +35,6 @@ export default async function ChatSessionPage({ params }: { params: Promise<{ sl
     <ChatPage
       initialSession={session}
       selectedCountry={session.extracted?.country || ""}
-      onNavigate={(path) => {
-        window.location.href = path;
-      }}
       countries={DEFAULT_COUNTRIES}
     />
   );
