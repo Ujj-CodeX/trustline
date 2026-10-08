@@ -166,13 +166,17 @@ export const ChatPage: React.FC<ChatPageProps> = ({
 
 
   const hasLocationInQuery = (text: string): boolean => {
-  return /\b(in|near|at)\s+[A-Z][a-zA-Z]+/.test(text);
+  return /\b(in|near|at)\s+[a-zA-Z]+/i.test(text);
 };
 
 const getGeoLocation = async (): Promise<{ country: string; state: string; district: string } | null> => {
-  const cached = sessionStorage.getItem("trustline_geo");
-  if (cached !== null) {
-    return cached === "null" ? null : JSON.parse(cached);
+  try {
+    const cached = sessionStorage.getItem("trustline_geo");
+    if (cached) {
+      return JSON.parse(cached);
+    }
+  } catch {
+    sessionStorage.removeItem("trustline_geo");
   }
 
   const result = await new Promise<{ country: string; state: string; district: string } | null>((resolve) => {
@@ -202,7 +206,9 @@ const getGeoLocation = async (): Promise<{ country: string; state: string; distr
     );
   });
 
-  sessionStorage.setItem("trustline_geo", result ? JSON.stringify(result) : "null");
+  if (result) {
+    sessionStorage.setItem("trustline_geo", JSON.stringify(result));
+  }
   return result;
 };
 
