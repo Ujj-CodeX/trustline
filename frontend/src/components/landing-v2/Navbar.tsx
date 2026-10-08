@@ -152,7 +152,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           </a>
 
           <a
-            href="#about"
+            href="/about"
             className={`transition-colors duration-150 py-1 ${
               isDark
                 ? "hover:text-white"
@@ -263,7 +263,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             </a>
 
             <a
-              href="#about"
+              href="/about"
               onClick={handleMobileLinkClick}
               className={`py-2.5 px-2 rounded-lg transition-colors flex items-center min-h-[44px] ${
                 isDark
