@@ -21,6 +21,12 @@ import { useTheme } from "@/components/landing-v2/ThemeContext";
 
 interface ChatPageProps {
   initialQuery?: string;
+  initialSession?: {
+    query_text?: string;
+    reply?: string;
+    extracted?: ExtractedIntent | null;
+    resources?: ResourceItem[];
+  } | null;
   selectedCountry: string;
   resumeFromStorage?: boolean;
   onNavigate: (path: string) => void;
@@ -30,6 +36,7 @@ interface ChatPageProps {
 
 export const ChatPage: React.FC<ChatPageProps> = ({
   initialQuery = "",
+  initialSession = null,
   selectedCountry,
   resumeFromStorage = false,
   onNavigate,
@@ -153,6 +160,34 @@ export const ChatPage: React.FC<ChatPageProps> = ({
         return;
 
       }
+    }
+
+    if (initialSession) {
+      setMessages([
+        {
+          id: "session-user",
+          sender: "user",
+          text: initialSession.query_text || "Query",
+          timestamp: getFormattedTime(),
+        },
+        {
+          id: "session-ai",
+          sender: "ai",
+          text:
+            initialSession.reply ||
+            "Here are the verified support resources for your query.",
+          timestamp: getFormattedTime(),
+          extracted: initialSession.extracted || undefined,
+          resources: initialSession.resources || [],
+        },
+      ]);
+
+      setCurrentExtracted(initialSession.extracted || null);
+      setCurrentResources(initialSession.resources || []);
+      setResourceSort("recommended");
+      setVisibleOtherResources(4);
+      setIsSortOpen(false);
+      return;
     }
 
     if (initialQuery && initialQuery.trim()) {
