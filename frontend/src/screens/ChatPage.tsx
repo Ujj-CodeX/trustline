@@ -32,7 +32,6 @@ interface ChatPageProps {
   } | null;
   selectedCountry: string;
   resumeFromStorage?: boolean;
-  onNavigate?: (path: string) => void;
   countries: CountryOption[];
 
 }
@@ -46,9 +45,6 @@ export const ChatPage: React.FC<ChatPageProps> = ({
 }) => {
   const router = useRouter();
   const [localCountry, setLocalCountry] = useState(selectedCountry);
-  const router = useRouter();
-  const navigate = onNavigate ?? ((path: string) => router.push(path));
-
   const { isDark } = useTheme();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -352,7 +348,7 @@ const getGeoLocation = async (): Promise<{ country: string; state: string; distr
       <div className="mb-6 sm:mb-8 flex items-center justify-between gap-4">
         <button
           type="button"
-          onClick={() => navigate("/")}
+          onClick={() => router.push("/")}
           className={
             "inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-xs font-semibold " +
             "backdrop-blur-md transition-all cursor-pointer " +
