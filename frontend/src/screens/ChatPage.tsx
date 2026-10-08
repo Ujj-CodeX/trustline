@@ -42,9 +42,9 @@ export const ChatPage: React.FC<ChatPageProps> = ({
   initialSession = null,
   selectedCountry,
   resumeFromStorage = false,
-  onNavigate,
   countries,
 }) => {
+  const router = useRouter();
   const [localCountry, setLocalCountry] = useState(selectedCountry);
   const router = useRouter();
   const navigate = onNavigate ?? ((path: string) => router.push(path));
