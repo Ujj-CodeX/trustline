@@ -24,7 +24,7 @@ export default function Composer({
   // Backend expects the country NAME ("India", "United States", ...), not the ISO code.
   // India is shown by default for the UI, but it is not treated as an
   // explicitly selected country until the user actually chooses one.
-  const [selectedCountry, setSelectedCountry] = useState("India");
+  const [selectedCountry, setSelectedCountry] = useState("");
   const [hasManualCountrySelection, setHasManualCountrySelection] =
     useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -90,7 +90,7 @@ export default function Composer({
           >
             <span className="text-lg">{currentCountry.flag}</span>
             <span className="truncate max-w-[130px]">
-              {currentCountry.name}
+              {selectedCountry ? currentCountry.name : t("Select country")}
             </span>
             <ChevronDown
               className={`w-3.5 h-3.5 shrink-0 ${
