@@ -1,14 +1,21 @@
 "use client";
-import { StaticShell } from "@/screens/StaticShell";
+
+import { AboutPage as AboutPageContent } from "@/components/landing-v2/AboutPage";
 
 export default function AboutPage() {
   return (
-    <StaticShell
-      page="about"
-      onNavigate={(path) => {
-        if (typeof window !== "undefined") {
-          window.location.href = path;
-        }
+    <AboutPageContent
+      onBackToHome={() => {
+        window.location.href = "/";
+      }}
+      onNavigateToPrivacy={() => {
+        window.location.href = "/privacy";
+      }}
+      onNavigateToTerms={() => {
+        window.location.href = "/terms";
+      }}
+      onFindHelpClick={() => {
+        window.location.href = "/chat";
       }}
     />
   );
