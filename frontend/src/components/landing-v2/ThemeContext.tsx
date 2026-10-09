@@ -26,21 +26,23 @@ export const ThemeProvider = ({
 }: {
   children: ReactNode;
 }) => {
-  const [theme, setTheme] = useState<Theme>(() => {
-    if (typeof window !== "undefined") {
-      const stored =
-        localStorage.getItem("trustline_theme");
-
-      if (stored === "light" || stored === "dark") {
-        return stored;
-      }
-    }
-
-    // ZIP behavior: TrustLine defaults to dark.
-    return "dark";
-  });
+  // Keep the first server and client render identical to avoid hydration mismatches.
+  const [theme, setTheme] = useState<Theme>("dark");
+  const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
+    const stored = localStorage.getItem("trustline_theme");
+
+    if (stored === "light" || stored === "dark") {
+      setTheme(stored);
+    }
+
+    setIsHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isHydrated) return;
+
     const root = document.documentElement;
 
     if (theme === "light") {
@@ -51,11 +53,8 @@ export const ThemeProvider = ({
       root.classList.remove("light");
     }
 
-    localStorage.setItem(
-      "trustline_theme",
-      theme
-    );
-  }, [theme]);
+    localStorage.setItem("trustline_theme", theme);
+  }, [theme, isHydrated]);
 
   const toggleTheme = () => {
     setTheme((previous) =>
