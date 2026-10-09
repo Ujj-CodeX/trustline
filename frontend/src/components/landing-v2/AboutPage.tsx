@@ -16,7 +16,8 @@ import {
   Database,
   ArrowRight,
   Sparkles,
-} from 'lucide-react';
+} 
+from 'lucide-react';
 import { useTheme } from './ThemeContext';
 import { useLanguage } from '@/lib/LanguageContext';
 
