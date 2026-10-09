@@ -63,7 +63,7 @@ Important limitations:
 
 Fallback records are maintained in **backend/core/fallbacks.py**. They are not live-checked against official sources. Some country/category pairs have specific entries; others use a country default or a generic “contact local emergency services” response. A generic fallback may have no phone number.
 
-Treat this registry as data requiring manual review, not as a globally complete or automatically verified emergency directory. Do not describe all fallback entries as verified.
+Treat this registry as data requiring manual review, not as a globally complete or automatically verified emergency directory. Do not describe all fallback entries as verified. A current entry labelled as the FBI Internet Crime Complaint Center has a phone field set to 980; the repository does not establish that this is an official contact number, so that entry must be validated or removed before public use.
 
 ## Architecture and stack
 
@@ -142,7 +142,7 @@ macOS/Linux:
 
 Install the root requirements and the currently missing direct imports:
 
-    pip install -r ..\requirements.txt
+    pip install -r ../requirements.txt
     pip install sentence-transformers argostranslate
 
 Create **backend/.env**:
