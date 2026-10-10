@@ -14,6 +14,7 @@ interface ThemeContextType {
   theme: Theme;
   toggleTheme: () => void;
   isDark: boolean;
+  isHydrated: boolean;
 }
 
 const ThemeContext =
@@ -103,6 +104,7 @@ export const ThemeProvider = ({
         theme,
         toggleTheme,
         isDark: theme === "dark",
+        isHydrated,
       }}
     >
       {children}
@@ -112,6 +114,14 @@ export const ThemeProvider = ({
 
 export const useTheme = () => {
   const context = useContext(ThemeContext);
+  const [hasMounted, setHasMounted] = useState(false);
+
+  // A provider effect can resolve the saved/system preference before a
+  // nested client component hydrates. Keep each consumer's first render
+  // consistent with the server, then expose the resolved theme after mount.
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
 
   if (!context) {
     throw new Error(
@@ -119,5 +129,12 @@ export const useTheme = () => {
     );
   }
 
-  return context;
+  const resolvedTheme: Theme =
+    hasMounted && context.isHydrated ? context.theme : "dark";
+
+  return {
+    ...context,
+    theme: resolvedTheme,
+    isDark: resolvedTheme === "dark",
+  };
 };
