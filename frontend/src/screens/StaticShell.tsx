@@ -4,11 +4,11 @@ import { LocalizedPage } from "@/components/LocalizedPage";
 import {
   ArrowLeft, ShieldCheck, HelpCircle, BookOpen, Lock, Info,
   FileText, Brain, Heart, Users, Laptop, Scale, CloudRain,
-  EyeOff, Database, Server, Globe2, CheckCircle2, Target,
+  EyeOff, Database, Server, Globe2, Target,
 } from "lucide-react";
 
 interface StaticShellProps {
-  page: "how-it-works" | "resources" | "safety" | "about";
+  page: "how-it-works" | "resources" | "safety";
   onNavigate: (path: string) => void;
 }
 
@@ -108,19 +108,6 @@ export const StaticShell: React.FC<StaticShellProps> = ({ page, onNavigate }) =>
     );
   }
 
-  return (
-    <Wrapper>
-      <Header Icon={Info} title="About TrustLine" tagline="Connecting people in distress to verified help, in seconds." />
-      <p className="text-base text-slate-600 dark:text-slate-300 leading-relaxed">
-        Millions of people don't know where to turn when it matters most. TrustLine bridges AI-driven intent
-        understanding with verified civic infrastructure — government helplines, NGOs, and trusted directories —
-        so anyone, anywhere, can find the right support without guesswork or delay.
-      </p>
-      <div className="grid md:grid-cols-3 gap-5">
-        <Card Icon={CheckCircle2} color="blue" title="Verified sources" desc="Every number sourced from government helplines, NGOs, and verified directories." />
-        <Card Icon={Globe2} color="blue" title="Global + local depth" desc="District-level coverage in India, cached verified data across 195+ countries." />
-        <Card Icon={ShieldCheck} color="blue" title="AI that never guesses" desc="The AI understands and explains — the data always comes from a trusted source." />
-      </div>
-    </Wrapper>
-  );
+  // All supported static pages return above; About has its own route.
+  return null;
 };
