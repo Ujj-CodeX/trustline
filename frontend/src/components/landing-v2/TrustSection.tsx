@@ -142,7 +142,7 @@ export default function TrustSection() {
 
             <div className="max-w-sm space-y-2">
               <p
-                className={[
+                className={[ 
                   "text-xs leading-relaxed sm:text-sm",
                   isDark ? "text-slate-300" : "text-slate-600",
                 ].join(" ")}

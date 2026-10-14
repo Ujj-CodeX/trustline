@@ -1,6 +1,4 @@
 "use client";
-
-import React from "react";
 import { ShieldCheck } from "lucide-react";
 
 import { useLanguage } from "@/lib/LanguageContext";

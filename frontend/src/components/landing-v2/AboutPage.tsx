@@ -6,7 +6,6 @@ import {
   Lock,
   PhoneCall,
   CheckCircle2,
-  FileText,
   AlertCircle,
   ExternalLink,
   Users,

@@ -1,5 +1,4 @@
 "use client";
-import React from "react";
 import { EmergencyBar } from "./EmergencyBar";
 import Navbar from "./Navbar";
 import HeroSection from "./HeroSection";

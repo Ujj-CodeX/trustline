@@ -12,9 +12,8 @@ from rest_framework.throttling import AnonRateThrottle
 from django.utils.text import slugify
 from .fallbacks import get_fallback
 
-import requests
 from copy import deepcopy
-from .translator import translate_text, translate_texts
+from .translator import translate_texts
 
 
 TRANSLATABLE_FIELDS = [
