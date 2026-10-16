@@ -59,19 +59,22 @@ class RoutingSchema(BaseModel):
 
     clarification_question: Optional[str] = None
 
-    @model_validator(mode="before")
+
+    @model_validator(mode="after")
     def validate_route_category(self):
         if self.route == "in_scope" and self.category is None:
             raise ValueError(
                 "An in-scope request must have a support category."
             )
 
-        if self.rout != "in_scope" and self.category is not None:
+        if self.route != "in_scope" and self.category is not None:
             raise ValueError(
                 "Non-support routes must not have a support category."
             )
 
         return self
+
+    
 
     
 

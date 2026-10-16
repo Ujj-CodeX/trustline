@@ -145,8 +145,27 @@ class ChatQueryView(APIView):
 
         route = extracted.get("route")
         category = extracted.get("category")
-        language = extracted.get("language") or "English"
+        raw_language = str(extracted.get("language") or "English").strip()
+
+        language_key = raw_language.lower().replace("_", "-")
+
+        if language_key in {"hi", "hi-in", "hindi"}:
+            contains_devanagari = any("\u0900" <= char <= "\u097F"
+               for char in query_text
+            )
+            language = "Hindi" if contains_devanagari else "Hinglish"
+
+        elif language_key in {"hinglish", "hi-en", "hindi-english"}:
+            language = "Hinglish"
+
+        elif language_key in {"en", "en-us", "en-in", "english"}:
+            language = "English"
+
+        else:
+            language = raw_language
+
         language_lower = language.lower()
+        extracted["language"] = language
 
         # Fail safely if routing output is invalid.
         if (
@@ -242,7 +261,10 @@ class ChatQueryView(APIView):
                 extracted["category"],
             )
 
-        helplines = localize_resources(helplines, language)
+        resource_language = (
+         "Hindi" if language_lower == "hinglish" else language
+        )
+        helplines = localize_resources(helplines, resource_language)
 
         # No second Groq call for response formatting.
         if (
