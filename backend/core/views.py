@@ -94,95 +94,237 @@ def resolve_resources(extracted):
     return helplines
 
 
+
 class ChatQueryView(APIView):
-
     throttle_classes = [AnonRateThrottle]
-
 
     def post(self, request):
         query_text = request.data.get("query")
-        dropdown_country = request.data.get('dropdown_country')
-        geo_location = request.data.get('geo_location')
-        
-        
+
+        # Validate the incoming query.
+        if not isinstance(query_text, str):
+            return Response(
+                {"error": "query must be a string"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        query_text = query_text.strip()
+
         if not query_text:
-            return Response({"error": "query is required"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "query is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
-        extracted = classify_query(query_text)
+        if len(query_text) > 4000:
+            return Response(
+                {"error": "query must be 4000 characters or fewer"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
-        print("\n" + "=" * 80)
-        print("QUERY:", query_text)
-        print("EXTRACTED:", extracted)
-        print("=" * 80)
+        context = request.data.get("context")
 
-        
+        # Keep only the latest two valid messages.
+        if isinstance(context, list):
+            context = [
+                {
+                    "role": item["role"],
+                    "content": item["content"].strip()[:800],
+                }
+                for item in context[-2:]
+                if isinstance(item, dict)
+                and item.get("role") in ("user", "assistant")
+                and isinstance(item.get("content"), str)
+                and item["content"].strip()
+            ]
+        else:
+            context = None
 
-        if not extracted.get('country'):
-            if dropdown_country:
-                extracted['country'] = dropdown_country
-            elif geo_location and geo_location.get('country'):
-                extracted['country'] = geo_location['country']
-                extracted['state'] = extracted.get('state') or geo_location.get('state')
-                extracted['district'] = extracted.get('district') or geo_location.get('district')
+        # Groq primary; Sentence Transformer is the fallback.
+        extracted = classify_query(query_text, context=context)
+
+        route = extracted.get("route")
+        category = extracted.get("category")
+        raw_language = str(extracted.get("language") or "English").strip()
+
+        language_key = raw_language.lower().replace("_", "-")
+
+        if language_key in {"hi", "hi-in", "hindi"}:
+            contains_devanagari = any("\u0900" <= char <= "\u097F"
+               for char in query_text
+            )
+            language = "Hindi" if contains_devanagari else "Hinglish"
+
+        elif language_key in {"hinglish", "hi-en", "hindi-english"}:
+            language = "Hinglish"
+
+        elif language_key in {"en", "en-us", "en-in", "english"}:
+            language = "English"
+
+        else:
+            language = raw_language
+
+        language_lower = language.lower()
+        extracted["language"] = language
+
+        # Fail safely if routing output is invalid.
+        if (
+            route not in {
+                "in_scope",
+                "needs_clarification",
+                "out_of_scope",
+            }
+            or (route == "in_scope" and not category)
+        ):
+            route = "needs_clarification"
+            extracted["route"] = route
+            extracted["category"] = None
+
+        # No database lookup or public slug for non-support routes.
+        if route != "in_scope":
+            if route == "needs_clarification":
+                reply = extracted.get("clarification_question")
+
+                if not reply:
+                    if (
+                        "hindi" in language_lower
+                        or "hinglish" in language_lower
+                    ):
+                        reply = "Aapko kis tarah ki madad chahiye?"
+                    else:
+                        reply = "What kind of support do you need?"
+
             else:
-                extracted['country'] = 'India'
-        print("FINAL COUNTRY:", extracted.get("country"))
-        print("FINAL STATE:", extracted.get("state"))
-        print("FINAL DISTRICT:", extracted.get("district"))
-        print("LANGUAGE:", extracted.get("language"))
+                if (
+                    "hindi" in language_lower
+                    or "hinglish" in language_lower
+                ):
+                    reply = (
+                        "TrustLine verified helplines aur support "
+                        "resources dhoondhne ke liye hai."
+                    )
+                else:
+                    reply = (
+                        "TrustLine helps you find verified helplines "
+                        "and support resources."
+                    )
 
-        # FIX: India lookup ALWAYS runs — never skipped for missing location
+            return Response({
+                "route": route,
+                "query_text": query_text,
+                "extracted": extracted,
+                "resources": [],
+                "reply": reply,
+                "slug": None,
+            })
+
+        # Resolve location only after identifying a support need.
+        dropdown_country = request.data.get("dropdown_country")
+        geo_location = request.data.get("geo_location")
+
+        if not extracted.get("country"):
+            if (
+                isinstance(dropdown_country, str)
+                and dropdown_country.strip()
+            ):
+                extracted["country"] = dropdown_country.strip()
+
+            elif (
+                isinstance(geo_location, dict)
+                and geo_location.get("country")
+            ):
+                extracted["country"] = geo_location["country"]
+                extracted["state"] = (
+                    extracted.get("state")
+                    or geo_location.get("state")
+                )
+                extracted["district"] = (
+                    extracted.get("district")
+                    or geo_location.get("district")
+                )
+
+            else:
+                extracted["country"] = "India"
+
+        # Existing verified database/cache lookup.
         if extracted["country"].lower() == "india":
             helplines = self._lookup_india(extracted)
         else:
             helplines = self._lookup_global(extracted)
 
-        print("RAW HELPLINES FOUND:", len(helplines))
+        # Track real database/cache matches before applying fallback.
+        has_stored_resources = bool(helplines)
 
         if not helplines:
-            
-            helplines = get_fallback(extracted["country"],extracted["category"])
+            helplines = get_fallback(
+                extracted["country"],
+                extracted["category"],
+            )
 
-            
-        # ALWAYS localize resource cards
-        helplines = localize_resources(helplines, extracted.get('language', 'English'))
+        resource_language = (
+         "Hindi" if language_lower == "hinglish" else language
+        )
+        helplines = localize_resources(helplines, resource_language)
 
-        # THEN generate formatted response
-        reply = format_response(query_text,helplines,extracted.get("language", "English"))
+        # No second Groq call for response formatting.
+        if (
+            "hindi" in language_lower
+            or "hinglish" in language_lower
+        ):
+            reply = (
+                "Neeche aapki need ke mutabik support resources diye "
+                "gaye hain. Urgent situation mein listed helpline "
+                "se seedha sampark karein."
+            )
+        else:
+            reply = (
+                "Here are the support resources matching your need. "
+                "If the situation is urgent, contact the listed "
+                "helpline directly."
+            )
 
-        print("REPLY GENERATED:")
-        print(reply)
-
-
+        # Log only support-related queries.
         QueryLog.objects.create(
             query_text=query_text,
-            category=extracted.get('category', ''),
-            urgency_tier=extracted.get('urgency_tier', ''),
-            country=extracted.get('country', ''),
-            location_detected=f"{extracted.get('state')}, {extracted.get('district')}"
+            category=extracted["category"],
+            urgency_tier=extracted.get(
+                "urgency_tier", "general"
+            ),
+            country=extracted.get("country", ""),
+            location_detected=(
+                f"{extracted.get('state')}, "
+                f"{extracted.get('district')}"
+            ),
         )
 
-        slug_base = generate_slug(
-            extracted.get('category', 'general'),
-            extracted.get('country', 'india'),
-            extracted.get('state'),
-            extracted.get('district')
-        )
+        # Public session slug only when real stored resources exist.
+        session_slug = None
 
-        existing = ChatSession.objects.filter(slug=slug_base).first()
-
-        if not existing:
-            ChatSession.objects.create(
-                slug=slug_base,
-                category=extracted.get('category', ''),
-                country=extracted.get('country', ''),
-                state=extracted.get('state'),
-                district=extracted.get('district'),
-
+        if has_stored_resources:
+            slug_base = generate_slug(
+                extracted["category"],
+                extracted["country"],
+                extracted.get("state"),
+                extracted.get("district"),
             )
-        session_slug = slug_base
+
+            existing = ChatSession.objects.filter(
+                slug=slug_base
+            ).first()
+
+            if not existing:
+                ChatSession.objects.create(
+                    slug=slug_base,
+                    category=extracted["category"],
+                    country=extracted["country"],
+                    state=extracted.get("state"),
+                    district=extracted.get("district"),
+                )
+
+            session_slug = slug_base
 
         return Response({
+            "route": "in_scope",
             "query_text": query_text,
             "extracted": extracted,
             "resources": helplines,
@@ -190,46 +332,72 @@ class ChatQueryView(APIView):
             "slug": session_slug,
         })
 
-    
-
     def _lookup_india(self, extracted):
-        
-
         category = extracted["category"]
         state = extracted.get("state")
         district = extracted.get("district")
 
-        qs = Helpline.objects.filter(country__iexact="India", category=category)
+        qs = Helpline.objects.filter(
+            country__iexact="India",
+            category=category,
+        )
+
         if state:
-            qs = qs.filter(Q(state__iexact=state) | Q(state__isnull=True))
+            qs = qs.filter(
+                Q(state__iexact=state) | Q(state__isnull=True)
+            )
+
         if district:
-            qs = qs.filter(Q(district__iexact=district) | Q(district__isnull=True))
+            qs = qs.filter(
+                Q(district__iexact=district)
+                | Q(district__isnull=True)
+            )
 
         results = list(qs)
 
-        def sort_key(h):
-            district_match = 0 if (district and h.district and h.district.lower() == district.lower()) else 1
-            state_match = 0 if (state and h.state and h.state.lower() == state.lower()) else 1
-            return (district_match, state_match, -h.priority)
+        def sort_key(helpline):
+            district_match = 0 if (
+                district
+                and helpline.district
+                and helpline.district.lower() == district.lower()
+            ) else 1
+
+            state_match = 0 if (
+                state
+                and helpline.state
+                and helpline.state.lower() == state.lower()
+            ) else 1
+
+            return (
+                district_match,
+                state_match,
+                -helpline.priority,
+            )
 
         results.sort(key=sort_key)
         return HelplineSerializer(results[:5], many=True).data
 
-    
-
     def _lookup_global(self, extracted):
-        data = get_global_resources(extracted["country"],extracted["category"])
+        data = get_global_resources(
+            extracted["country"],
+            extracted["category"],
+        )
 
         verification_rank = {
-             "verified_authority": 0,
-             "verified_web":1,
-             "cross_referenced": 2,
-             "legacy_unverified": 3,
-            }
+            "verified_authority": 0,
+            "verified_web": 1,
+            "cross_referenced": 2,
+            "legacy_unverified": 3,
+        }
 
-        data.sort(key=lambda r: verification_rank.get(r.get("verification_status"),4))
+        data.sort(
+            key=lambda resource: verification_rank.get(
+                resource.get("verification_status"), 4
+            )
+        )
+
         return data
-    
+
     
 
 
