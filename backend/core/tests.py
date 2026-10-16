@@ -28,7 +28,8 @@ class ChatQueryTests(TestCase):
     def test_india_lookup_returns_helpline(self, mock_classify):
         mock_classify.return_value = {
             "category": "cyber_crime", "urgency_tier": "urgent",
-            "state": "Uttar Pradesh", "district": "Lucknow", "country": "India"
+            "state": "Uttar Pradesh", "district": "Lucknow", "country": "India",
+            "route": "in_scope",
         }
         response = self.client.post("/api/chat/", {"query": "cyber fraud in Lucknow"}, format="json")
         self.assertEqual(response.status_code, 200)
@@ -39,7 +40,8 @@ class ChatQueryTests(TestCase):
     def test_global_lookup_returns_cache(self, mock_classify):
         mock_classify.return_value = {
             "category": "domestic_violence", "urgency_tier": "urgent",
-            "state": None, "district": None, "country": "Australia"
+            "state": None, "district": None, "country": "Australia",
+            "route": "in_scope",
         }
         response = self.client.post("/api/chat/", {"query": "DV help in Australia"}, format="json")
         self.assertEqual(response.status_code, 200)
@@ -48,13 +50,76 @@ class ChatQueryTests(TestCase):
     @patch("core.views.classify_query")
     def test_empty_result_triggers_fallback(self, mock_classify):
         mock_classify.return_value = {
-            "category": "gambling", "urgency_tier": "general",
-            "state": None, "district": None, "country": "Vatican City"
+            "category": "general", "urgency_tier": "general",
+            "state": None, "district": None, "country": "Vatican City",
+            "route": "in_scope",
         }
         response = self.client.post("/api/chat/", {"query": "obscure query"}, format="json")
         self.assertEqual(response.status_code, 200)
         self.assertIn("resources", response.data)
         self.assertTrue(len(response.data["resources"]) > 0)  # fallback, never empty
+    
+    @patch("core.views.classify_query")
+    def test_clarification_skips_resource_lookup(self, mock_classify):
+        mock_classify.return_value = {
+            "route": "needs_clarification",
+            "category": None,
+            "urgency_tier": "general",
+            "state": None,
+            "district": None,
+            "country": "",
+            "language": "English",
+            "clarification_question": "What kind of help do you need?",
+        }
+
+        with patch(
+            "core.views.ChatQueryView._lookup_india"
+        ) as india_lookup, patch(
+            "core.views.ChatQueryView._lookup_global"
+        ) as global_lookup:
+            response = self.client.post(
+                "/api/chat/",
+                {"query": "Please help me"},
+                format="json",
+            )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["route"], "needs_clarification")
+        self.assertEqual(response.data["resources"], [])
+        self.assertIsNone(response.data["slug"])
+        india_lookup.assert_not_called()
+        global_lookup.assert_not_called()
+
+    @patch("core.views.classify_query")
+    def test_out_of_scope_skips_resource_lookup(self, mock_classify):
+        mock_classify.return_value = {
+            "route": "out_of_scope",
+            "category": None,
+            "urgency_tier": "general",
+            "state": None,
+            "district": None,
+            "country": "",
+            "language": "English",
+            "clarification_question": None,
+        }
+
+        with patch(
+            "core.views.ChatQueryView._lookup_india"
+        ) as india_lookup, patch(
+            "core.views.ChatQueryView._lookup_global"
+        ) as global_lookup:
+            response = self.client.post(
+                "/api/chat/",
+                {"query": "Tell me a joke"},
+                format="json",
+            )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["route"], "out_of_scope")
+        self.assertEqual(response.data["resources"], [])
+        self.assertIsNone(response.data["slug"])
+        india_lookup.assert_not_called()
+        global_lookup.assert_not_called()
 
 
 class SchemaValidationTests(TestCase):
