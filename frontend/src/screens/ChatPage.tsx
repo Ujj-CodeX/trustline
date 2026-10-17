@@ -16,7 +16,7 @@ import {
 import { ChatBubble } from "@/components/ChatBubble";
 import { ResourceCard } from "@/components/ResourceCard";
 import { fetchChatResponse } from "@/lib/api";
-import { Message, ResourceItem, ExtractedIntent, CountryOption, UrgencyTier } from "@/types";
+import { Message, ResourceItem, ExtractedIntent, CountryOption, UrgencyTier , ChatContextMessage,} from "@/types";
 import { useRouter } from "next/navigation";
 
 import { ChevronDown } from "lucide-react";
@@ -74,6 +74,14 @@ export const ChatPage: React.FC<ChatPageProps> = ({
   const handleSendMessage = async (queryText: string) => {
   if (!queryText.trim() || isLoading) return;
 
+  const context: ChatContextMessage[] = messages
+  .filter((message) => !message.isTyping && message.text.trim())
+  .map((message) => ({
+    role: message.sender === "ai" ? ("assistant" as const) : ("user" as const),
+    content: message.text.trim(),
+  }))
+  .slice(-2);
+
   const userMessage: Message = { id: `user-${Date.now()}`, sender: "user", text: queryText.trim(), timestamp: getFormattedTime() };
   const typingMessage: Message = { id: `typing-${Date.now()}`, sender: "ai", text: "Searching verified databases...", timestamp: getFormattedTime(), isTyping: true };
 
@@ -100,7 +108,7 @@ export const ChatPage: React.FC<ChatPageProps> = ({
   }
 
   try {
-    const { data, error } = await fetchChatResponse(queryText.trim(), countryToSend, geoLocation);
+    const { data, error } = await fetchChatResponse(queryText.trim(), countryToSend, geoLocation,context);
 
     setMessages((prev) => {
       const withoutTyping = prev.filter((m) => !m.isTyping);
