@@ -298,30 +298,106 @@ class ChatQueryView(APIView):
         )
 
         # Public session slug only when real stored resources exist.
+                
         session_slug = None
 
-        if has_stored_resources:
-            slug_base = generate_slug(
-                extracted["category"],
-                extracted["country"],
-                extracted.get("state"),
-                extracted.get("district"),
-            )
+        if (
+            has_stored_resources
+            and route == "in_scope"
+            and category
+        ):
+            requested_state = (
+                extracted.get("state") or ""
+            ).strip()
 
-            existing = ChatSession.objects.filter(
-                slug=slug_base
-            ).first()
+            requested_district = (
+                extracted.get("district") or ""
+            ).strip()
 
-            if not existing:
-                ChatSession.objects.create(
-                    slug=slug_base,
-                    category=extracted["category"],
-                    country=extracted["country"],
-                    state=extracted.get("state"),
-                    district=extracted.get("district"),
+            matched_location = None
+
+            # Verify extracted locations against actual stored resources.
+            if requested_state or requested_district:
+                for resource in helplines:
+                    resource_state = (
+                        resource.get("state") or ""
+                    ).strip()
+
+                    resource_district = (
+                        resource.get("district") or ""
+                    ).strip()
+
+                    state_matches = (
+                        not requested_state
+                        or resource_state.casefold()
+                        == requested_state.casefold()
+                    )
+
+                    district_matches = (
+                        not requested_district
+                        or resource_district.casefold()
+                        == requested_district.casefold()
+                    )
+
+                    location_is_specific = (
+                        (
+                            not requested_state
+                            or bool(resource_state)
+                        )
+                        and (
+                            not requested_district
+                            or bool(resource_district)
+                        )
+                    )
+
+                    if (
+                        state_matches
+                        and district_matches
+                        and location_is_specific
+                    ):
+                        matched_location = resource
+                        break
+
+            else:
+                # No state/district was requested.
+                matched_location = {}
+
+            # Only create a slug when the requested location is supported
+            # by a stored resource, or no specific location was requested.
+            if matched_location is not None:
+                slug_state = (
+                    matched_location.get("state")
+                    if requested_state
+                    else None
                 )
 
-            session_slug = slug_base
+                slug_district = (
+                    matched_location.get("district")
+                    if requested_district
+                    else None
+                )
+
+                slug_base = generate_slug(
+                    category,
+                    extracted["country"],
+                    slug_state,
+                    slug_district,
+                )
+
+                existing = ChatSession.objects.filter(
+                    slug=slug_base
+                ).first()
+
+                if not existing:
+                    ChatSession.objects.create(
+                        slug=slug_base,
+                        category=category,
+                        country=extracted["country"],
+                        state=slug_state,
+                        district=slug_district,
+                    )
+
+                session_slug = slug_base
 
         return Response({
             "route": "in_scope",

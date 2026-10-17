@@ -219,6 +219,27 @@ def classify_query(query_text, context=None):
         result = validated.model_dump()
         result["routing_source"] = "groq"
 
+        if result["route"] == "in_scope":
+           semantic_check = classify_intent(query_text)
+           semantic_route = semantic_check.get("route")
+
+    # Do not allow uncertain or unrelated queries to reach lookup.
+           if semantic_route != "in_scope":
+                result["route"] = (
+                   semantic_route
+                if semantic_route in {
+                   "needs_clarification",
+                   "out_of_scope",
+                }
+                else "needs_clarification"
+            )
+
+                result["category"] = None
+                result["clarification_question"] = None
+                result["routing_source"] = (
+               "groq_guarded_by_sentence_transformer"
+            )
+
         return result
 
     except (json.JSONDecodeError, ValidationError, ValueError):
