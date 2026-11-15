@@ -1,215 +1,136 @@
 "use client";
 
-import React, { useState } from "react";
-import { ArrowRight, ChevronDown } from "lucide-react";
-import { useLanguage } from "@/lib/LanguageContext";
+import { useState } from "react";
+import { ArrowUp, Check, ChevronDown, Globe2 } from "lucide-react";
 import { DEFAULT_COUNTRIES } from "@/lib/countries";
-import { useTheme } from "./ThemeContext";
+import { useLanguage } from "@/lib/LanguageContext";
 
 interface ComposerProps {
-  onRouteSubmit?: (query: string, country: string) => void;
-  initialPrompt?: string;
-  className?: string;
-  variant?: "default" | "cta";
+  onSubmit: (query: string, country: string) => void;
 }
 
-export default function Composer({
-  onRouteSubmit,
-  initialPrompt = "",
-  className = "",
-  variant = "default",
-}: ComposerProps) {
-  const isCta = variant === "cta";
-  const [promptText, setPromptText] = useState(initialPrompt);
-  // Backend expects the country NAME ("India", "United States", ...), not the ISO code.
-  // India is shown by default for the UI, but it is not treated as an
-  // explicitly selected country until the user actually chooses one.
-  const [selectedCountry, setSelectedCountry] = useState("");
-  const [hasManualCountrySelection, setHasManualCountrySelection] =
-    useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+const examples = [
+  "My Instagram account was hacked",
+  "I need mental health support near me",
+  "I need legal help in Lucknow",
+  "Someone at home is hurting me",
+];
 
+export default function Composer({ onSubmit }: ComposerProps) {
   const { t } = useLanguage();
-  const { isDark } = useTheme();
+  const [value, setValue] = useState("");
+  const [country, setCountry] = useState(DEFAULT_COUNTRIES[0]?.name || "India");
+  const [countryOpen, setCountryOpen] = useState(false);
 
-  const currentCountry =
-    DEFAULT_COUNTRIES.find(
-      (country) => country.name === selectedCountry
-    ) || DEFAULT_COUNTRIES[0];
-
-  const promptSuggestions = [
-    "My Instagram account was hacked",
-    "I need mental health support near me",
-    "I need legal help in Lucknow",
-    "Someone at home is hurting me",
-    "I need emergency help",
-  ];
-
-  const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
-
-    const query = promptText.trim();
-    if (!query || isSubmitting) return;
-
-    setIsSubmitting(true);
-
-    window.setTimeout(() => {
-      onRouteSubmit?.(
-        query,
-        hasManualCountrySelection ? currentCountry.name : ""
-      );
-      setIsSubmitting(false);
-    }, 250);
-  };
-
-  const handleSuggestion = (text: string) => {
-    setPromptText(text);
+  const submit = () => {
+    const query = value.trim();
+    if (!query) return;
+    onSubmit(query, country);
   };
 
   return (
-    <div className={`w-full max-w-4xl mx-auto ${className}`}>
-      <form
-        onSubmit={handleSubmit}
-        className={`composer-root ${isCta ? "composer-cta" : ""} w-full rounded-2xl sm:rounded-full p-2 sm:p-2.5 backdrop-blur-md flex flex-col sm:flex-row items-stretch sm:items-center gap-2 transition-all focus-within:ring-2 ${
-          isDark
-            ? "bg-slate-900/95 shadow-2xl shadow-teal-400/25 ring-teal-400/30 border border-teal-700"
-            : "bg-white/95 shadow-2xl shadow-teal-600/40 ring-teal-500/40 border border-teal-300"
-        }`}
-      >
-        {/* Country dropdown */}
-        <div className="relative shrink-0">
-          <button
-            type="button"
-            onClick={() => setDropdownOpen((prev) => !prev)}
-            className={`w-full sm:w-auto h-11 px-3.5 rounded-full font-semibold text-xs sm:text-sm flex items-center justify-between sm:justify-center gap-2 border transition-colors cursor-pointer ${
-              isDark
-                ? "bg-slate-800 hover:bg-slate-700 text-white border-slate-600"
-                : "bg-white hover:bg-slate-50 text-slate-900 border-slate-200/80"
-            }`}
-          >
-            <span className="text-lg">{currentCountry.flag}</span>
-            <span className="truncate max-w-[130px]">
-              {selectedCountry ? currentCountry.name : t("Select country")}
-            </span>
-            <ChevronDown
-              className={`w-3.5 h-3.5 shrink-0 ${
-                isDark ? "text-slate-400" : "text-slate-400"
-              }`}
-            />
-          </button>
+    <div className="w-full max-w-3xl">
+      <div className="landing-composer group rounded-[22px] bg-[#F6F4EE] p-2.5 shadow-[0_24px_60px_rgba(0,0,0,0.30)] ring-1 ring-black/10 transition-transform duration-300 focus-within:-translate-y-0.5 focus-within:shadow-[0_30px_75px_rgba(0,0,0,0.34)]">
+        <textarea
+          value={value}
+          onChange={(event) => setValue(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" && !event.shiftKey) {
+              event.preventDefault();
+              submit();
+            }
+          }}
+          rows={2}
+          placeholder={t("Describe what you need help with...")}
+          className="min-h-16 w-full resize-none bg-transparent px-3 py-2 text-base leading-7 text-[#12312c] outline-none placeholder:text-[#70817c] sm:min-h-[72px] sm:px-4 sm:py-3 sm:text-[15px]"
+          aria-label={t("Describe what you need help with")}
+        />
 
-          {dropdownOpen && (
-            <>
-              <button
-                type="button"
-                aria-label="Close country menu"
-                className="fixed inset-0 z-40 cursor-default"
-                onClick={() => setDropdownOpen(false)}
-              />
+        <div className="flex items-center justify-between gap-3 border-t border-[#17352f]/10 px-1.5 pt-2">
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setCountryOpen((open) => !open)}
+              className="inline-flex max-w-[190px] items-center gap-2 rounded-full border border-[#17352f]/10 bg-white/60 px-3 py-1.5 text-xs font-semibold text-[#29423d] transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600/30"
+            >
+              {country ? (
+                <span>{DEFAULT_COUNTRIES.find((item) => item.name === country)?.flag || "🌐"}</span>
+              ) : (
+                <Globe2 className="h-3.5 w-3.5" />
+              )}
+              <span className="truncate">{country || t("Anywhere")}</span>
+              <ChevronDown className="h-3.5 w-3.5 text-[#657974]" aria-hidden="true" />
+            </button>
 
-              <div
-                className={`absolute left-0 top-full mt-2 w-52 max-h-60 overflow-y-auto rounded-xl shadow-xl border p-1 z-50 ${
-                  isDark
-                    ? "bg-slate-900 border-slate-800"
-                    : "bg-white border-slate-200"
-                }`}
-              >
-                {DEFAULT_COUNTRIES.map((country) => (
+            {countryOpen && (
+              <div className="absolute bottom-full left-0 z-40 mb-2 w-52 overflow-hidden rounded-2xl border border-white/40 bg-[#F8F7F2] p-1.5 shadow-2xl ring-1 ring-black/5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCountry("");
+                    setCountryOpen(false);
+                  }}
+                  className="flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-xs text-[#223f38] hover:bg-white"
+                >
+                  <span className="inline-flex items-center gap-2">
+                    <Globe2 className="h-3.5 w-3.5" />
+                    {t("Anywhere")}
+                  </span>
+                  {!country && <Check className="h-3.5 w-3.5 text-teal-700" />}
+                </button>
+
+                {DEFAULT_COUNTRIES.map((item) => (
                   <button
-                    key={country.code}
+                    key={item.code}
                     type="button"
                     onClick={() => {
-                      setSelectedCountry(country.name);
-                      setHasManualCountrySelection(true);
-                      setDropdownOpen(false);
+                      setCountry(item.name);
+                      setCountryOpen(false);
                     }}
-                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs sm:text-sm text-left transition-colors cursor-pointer ${
-                      selectedCountry === country.name
-                        ? isDark
-                          ? "bg-teal-950/60 text-teal-300 font-semibold"
-                          : "bg-teal-50 text-teal-700 font-semibold"
-                        : isDark
-                          ? "text-slate-300 hover:bg-slate-800"
-                          : "text-slate-700 hover:bg-slate-100"
-                    }`}
+                    className="flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-xs text-[#223f38] hover:bg-white"
                   >
-                    <span className="text-base">{country.flag}</span>
-                    <span>{country.name}</span>
+                    <span className="inline-flex items-center gap-2">
+                      <span>{item.flag}</span>
+                      {item.name}
+                    </span>
+                    {country === item.name && (
+                      <Check className="h-3.5 w-3.5 text-teal-700" />
+                    )}
                   </button>
                 ))}
               </div>
-            </>
-          )}
-        </div>
+            )}
+          </div>
 
-        {/* Main query input */}
-        <div className="flex-1 px-2 py-1 sm:py-0 min-w-0">
-          <input
-            type="text"
-            value={promptText}
-            onChange={(event) => setPromptText(event.target.value)}
-            placeholder={t("Describe what you need help with...")}
-            className={`w-full bg-transparent text-sm sm:text-base font-bold focus:outline-none ${
-              isDark
-                ? "text-white placeholder-slate-300"
-                : "text-slate-900 placeholder-slate-700"
-            }`}
-          />
-
-          <p
-            className={`text-[11px] truncate mt-0.5 hidden sm:block ${
-              isDark ? "text-slate-500" : "text-slate-400"
-            }`}
-          >
-            e.g. cyber fraud, mental health support, women safety, domestic
-            violence, disaster relief...
-          </p>
-        </div>
-
-        {/* Submit */}
-        <button
-          type="submit"
-          disabled={!promptText.trim() || isSubmitting}
-          aria-label={t("Find support")}
-          className={`w-full sm:w-11 h-11 rounded-xl sm:rounded-full flex items-center justify-center gap-2 shadow-md transition-transform active:scale-95 shrink-0 cursor-pointer ${
-            promptText.trim()
-              ? "bg-[#0d4a54] hover:bg-[#09353c] text-white"
-              : isDark
-                ? "bg-slate-800 text-slate-500 cursor-not-allowed"
-                : "bg-slate-200 text-slate-400 cursor-not-allowed"
-          }`}
-        >
-          {isSubmitting ? (
-            <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-          ) : (
-            <>
-              <span className="sm:hidden text-xs font-semibold">
-                {t("Find Helplines")}
-              </span>
-              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-            </>
-          )}
-        </button>
-      </form>
-
-      {/* Suggestions */}
-      <div className="mt-3 sm:mt-4 flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 px-1">
-        {promptSuggestions.map((suggestion) => (
           <button
-            key={suggestion}
             type="button"
-            onClick={() => handleSuggestion(suggestion)}
-            className={`text-left text-[11px] sm:text-xs px-2.5 sm:px-3 py-1.5 rounded-full border transition-all duration-150 cursor-pointer active:scale-95 ${
-              isDark
-                ? "bg-slate-900/80 hover:bg-red-500/10 hover:border-red-400/70 border-slate-700/80 text-slate-300 hover:text-red-300"
-                : "bg-white hover:bg-red-50 hover:border-red-300 border-slate-300 text-slate-800 hover:text-red-600 shadow-sm"
-            }`}
+            onClick={submit}
+            disabled={!value.trim()}
+            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#0F766E] text-[#F6F4EE] shadow-[0_8px_20px_rgba(15,118,110,0.28)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#0d6b64] disabled:cursor-not-allowed disabled:bg-[#D6D9D4] disabled:text-[#929A96] disabled:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600/40"
+            aria-label={t("Find support")}
           >
-            {t(suggestion)}
+            <ArrowUp className="h-4 w-4" strokeWidth={2.4} aria-hidden="true" />
+          </button>
+        </div>
+      </div>
+
+      <div className="mt-4 flex flex-wrap justify-center gap-2">
+        {examples.map((example) => (
+          <button
+            key={example}
+            type="button"
+            onClick={() => setValue(example)}
+            className="group inline-flex items-center gap-1.5 rounded-full border border-white/12 bg-white/[0.035] px-3 py-1.5 text-[11px] font-medium text-white/58 backdrop-blur-sm transition-all duration-300 hover:border-teal-300/25 hover:bg-white/[0.07] hover:text-white/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-300/50 sm:text-xs"
+          >
+            <span>{t(example)}</span>
+            <span className="translate-x-0 opacity-0 transition-all duration-300 group-hover:translate-x-0.5 group-hover:opacity-70">→</span>
           </button>
         ))}
       </div>
+
+      <p className="mt-4 text-center text-[11px] leading-5 text-white/42 sm:text-xs">
+        {t("TrustLine helps route you to relevant support resources. Always verify critical information with the appropriate local authority.")}
+      </p>
     </div>
   );
 }

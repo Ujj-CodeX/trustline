@@ -1,64 +1,68 @@
 "use client";
-import { EmergencyBar } from "./EmergencyBar";
-import Navbar from "./Navbar";
+
+import { useEffect } from "react";
+import { LocalizedPage } from "@/components/LocalizedPage";
+import { useLanguage } from "@/lib/LanguageContext";
+import EmergencyBar from "./EmergencyBar";
+import LandingNavbar from "./LandingNavbar";
 import HeroSection from "./HeroSection";
 
-import ProductExperienceDemo from "./ProductExperienceDemo";
-import HowItWorksSection from "./HowItWorksSection";
-import TrustSection from "./TrustSection";
-
-import LocationSection from "./LocationSection";
-import FinalCTA from "./FinalCTA";
-import { Footer } from "./Footer";
+const LANDING_V2_UI_TEXTS = [
+  "Urgent emergency or dangerous situation?",
+  "Call 112 immediately",
+  "How it works",
+  "Resources",
+  "Safety",
+  "About",
+  "Get Help",
+  "TrustLine home",
+  "Open navigation",
+  "Close navigation",
+  "You know you need help.",
+  "You just don't know where to start.",
+  "Find the help you deserve.",
+  "Describe what you need help with...",
+  "Describe what you need help with",
+  "Anywhere",
+  "Find support",
+  "See how TrustLine works",
+  "My Instagram account was hacked",
+  "I need mental health support near me",
+  "I need legal help in Lucknow",
+  "Someone at home is hurting me",
+  "TrustLine helps route you to relevant support resources. Always verify critical information with the appropriate local authority.",
+];
 
 export default function LandingPage() {
-  const handleFindHelpClick = () => {
-    document
-      .getElementById("hero-composer")
-      ?.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-      });
+  const { lang, translateTexts } = useLanguage();
+
+  useEffect(() => {
+    if (lang !== "en") {
+      void translateTexts(LANDING_V2_UI_TEXTS);
+    }
+  }, [lang, translateTexts]);
+
+  const handleRouteSubmit = (query: string, country: string) => {
+    const params = new URLSearchParams();
+    if (query.trim()) params.set("q", query.trim());
+    if (country) params.set("country", country);
+    window.location.href = "/chat?" + params.toString();
   };
 
-  const handleRouteSubmit = (
-    query: string,
-    country: string
-  ) => {
-    const params = new URLSearchParams();
-
-    if (query.trim()) {
-      params.set("q", query.trim());
-    }
-
-    if (country) {
-      params.set("country", country);
-    }
-
-    window.location.href = `/chat?${params.toString()}`;
+  const handleGetHelp = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-[#030712] dark:text-white overflow-x-clip transition-colors duration-300">
-      <header className="fixed top-0 left-0 right-0 z-[60]">
+    <LocalizedPage>
+      <div className="min-h-screen overflow-x-clip bg-[#051817] text-white">
         <EmergencyBar />
-        <Navbar onFindHelpClick={handleFindHelpClick} />
-      </header>
-
-      <main>
-        <HeroSection onRouteSubmit={handleRouteSubmit}/>
-        <ProductExperienceDemo />
-        <HowItWorksSection />
-
-        <TrustSection />
-
-        <LocationSection />
-
-        <FinalCTA onRouteSubmit={handleRouteSubmit} />
-        <Footer  />
- 
-        {/* Step 5 onwards will go here */}
-      </main>
-    </div>
+        <LandingNavbar onGetHelp={handleGetHelp} />
+        <main>
+          <HeroSection onRouteSubmit={handleRouteSubmit} />
+          <div id="next-section" className="h-px w-full bg-transparent" />
+        </main>
+      </div>
+    </LocalizedPage>
   );
 }
