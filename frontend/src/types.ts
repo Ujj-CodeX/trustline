@@ -6,10 +6,16 @@ export interface GeoLocation {
   district?: string;
 }
 
+export interface ChatContextMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
 export interface ChatRequestBody {
   query: string;
   dropdown_country: string | null;
   geo_location: GeoLocation | null;
+  context?: ChatContextMessage[];
 }
 
 export interface ExtractedIntent {

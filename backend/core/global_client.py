@@ -1,6 +1,6 @@
-import requests
+
 import logging
-import pycountry
+
 
 from django.utils import timezone
 from datetime import timedelta
@@ -21,8 +21,7 @@ def get_global_resources(country,category):
     cached = GlobalResourceCache.objects.filter(
     country__iexact=country,
     category=lookup_category,
-    ttl_expiry__gte=now
-).first()
+    ttl_expiry__gte=now).first()
 
     if cached:
         return cached.raw_data
@@ -45,22 +44,12 @@ def get_global_resources(country,category):
 
     stale = GlobalResourceCache.objects.filter(
     country__iexact=country,
-    category=lookup_category
-).order_by('-fetched_at').first()
+    category=lookup_category).order_by('-fetched_at').first()
 
     if stale:
         return stale.raw_data
     
     return []
-
-
-def _get_iso_code(country_name):
-    try:
-        result = pycountry.countries.search_fuzzy(country_name)
-        return result[0].alpha_2.lower()
-    except Exception:
-        return None
-
 
 def _fetch_external_api(country, category):
     return None

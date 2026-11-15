@@ -1,4 +1,4 @@
-import { ChatRequestBody, ChatResponseBody, GeoLocation } from "@/types";
+import { ChatRequestBody, ChatResponseBody, GeoLocation, ChatContextMessage } from "@/types";
 
 const DJANGO_API_ENDPOINT =
   process.env.NEXT_PUBLIC_API_URL
@@ -8,13 +8,15 @@ const DJANGO_API_ENDPOINT =
 export async function fetchChatResponse(
   query: string,
   country: string | null = "India",
-  geoLocation: GeoLocation | null = null
+  geoLocation: GeoLocation | null = null,
+  context: ChatContextMessage[] = []
 ): Promise<{ data: ChatResponseBody; error: string | null }> {
   const payload: ChatRequestBody = {
-    query,
-    dropdown_country: country,
-    geo_location: geoLocation,
-  };
+  query,
+  dropdown_country: country,
+  geo_location: geoLocation,
+  context,
+};
 
   try {
     const controller = new AbortController();
