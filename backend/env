@@ -1,0 +1,10 @@
+SECRET_KEY=uu+g^hqym_$6wr9ugi&h@64d61n7x5d3d4l%j&u551p!9=a*o
+DEBUG=True
+ALLOWED_HOSTS=localhost,127.0.0.1
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=trustline_db
+DB_USER=postgres
+DB_PASSWORD=98567985Ukr#
+GOOGLE_TRANSLATE_API_KEY=
+GROQ_API_KEY=

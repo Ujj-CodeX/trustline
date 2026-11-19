@@ -5,7 +5,11 @@ from rest_framework import status
 
 from .models import Helpline, QueryLog, ChatSession
 from .serializers import HelplineSerializer
-from .groq_client import classify_query, format_response
+from .groq_client import (
+    classify_query,
+    format_response,
+    format_response_with_tools,
+)
 from .global_client import get_global_resources
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.throttling import AnonRateThrottle
@@ -14,7 +18,10 @@ from .fallbacks import get_fallback
 
 from copy import deepcopy
 from .translator import translate_texts
+import logging
 
+
+logger = logging.getLogger(__name__)
 
 TRANSLATABLE_FIELDS = [
     "name",
@@ -266,22 +273,13 @@ class ChatQueryView(APIView):
         )
         helplines = localize_resources(helplines, resource_language)
 
-        # No second Groq call for response formatting.
-        if (
-            "hindi" in language_lower
-            or "hinglish" in language_lower
-        ):
-            reply = (
-                "Neeche aapki need ke mutabik support resources diye "
-                "gaye hain. Urgent situation mein listed helpline "
-                "se seedha sampark karein."
-            )
-        else:
-            reply = (
-                "Here are the support resources matching your need. "
-                "If the situation is urgent, contact the listed "
-                "helpline directly."
-            )
+        response_data = format_response_with_tools(
+         query_text,
+         helplines,
+         language,)
+
+        reply = response_data["reply"]
+        knowledge_results = response_data["knowledge_results"]
 
         # Log only support-related queries.
         QueryLog.objects.create(
@@ -406,7 +404,19 @@ class ChatQueryView(APIView):
             "resources": helplines,
             "reply": reply,
             "slug": session_slug,
-        })
+
+            # RAG source references
+            "knowledge_sources": [
+            {
+            "title": item["title"],
+            "source_url": item.get("source_url"),
+            "similarity": item["similarity"],
+            }
+            for item in knowledge_results
+        ],
+
+
+    })
 
     def _lookup_india(self, extracted):
         category = extracted["category"]

@@ -4,12 +4,84 @@ from decouple import config
 from groq import Groq
 from pydantic import ValidationError
 
+from .knowledge.tools import TOOL_DEFINITIONS, execute_tool
+
 from .schemas import RoutingSchema
 from .rate_limiter import check_outbound_limit
 from .intent_classifier import classify_intent
+from .prompts import (
+    ROUTING_SYSTEM_PROMPT,
+    build_response_user_prompt,
+    build_response_system_prompt,
+)
+from .knowledge.retrieval import retrieve_knowledge, build_knowledge_context
 
+import logging
 
-GROQ_MODEL = "openai/gpt-oss-120b"
+logger = logging.getLogger(__name__)
+
+GROQ_MODEL = config(
+    "GROQ_MODEL",
+    default="openai/gpt-oss-120b",
+)
+
+GROQ_ROUTING_TIMEOUT = config(
+    "GROQ_ROUTING_TIMEOUT",
+    default=8,
+    cast=int
+)
+
+GROQ_FORMAT_TIMEOUT = config(
+    "GROQ_FORMAT_TIMEOUT",
+    default=5,
+    cast=int
+)
+ROUTING_JSON_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "route": {
+            "type": "string",
+            "enum": ["in_scope", "needs_clarification", "out_of_scope"]
+        },
+        "category": {
+            "anyOf": [
+                {
+                    "type": "string",
+                    "enum": [
+                        "cyber_crime", "domestic_violence",
+                        "mental_health", "child_helpline",
+                        "women_safety", "legal_aid",
+                        "health_emergency", "animal_husbandry",
+                        "senior_citizen", "disaster_relief",
+                        "labour_rights", "consumer_complaint",
+                        "road_accident", "missing_person", "general"
+                    ]
+                },
+                {"type": "null"}
+            ]
+        },
+        "urgency_tier": {
+            "type": "string",
+            "enum": ["emergency", "urgent", "general"]
+        },
+        "state": {
+            "anyOf": [{"type": "string"}, {"type": "null"}]
+        },
+        "district": {
+            "anyOf": [{"type": "string"}, {"type": "null"}]
+        },
+        "country": {"type": "string"},
+        "language": {"type": "string"},
+        "clarification_question": {
+            "anyOf": [{"type": "string"}, {"type": "null"}]
+        }
+    },
+    "required": [
+        "route", "category", "urgency_tier", "state",
+        "district", "country", "language", "clarification_question"
+    ],
+    "additionalProperties": False
+}
 
 _client = None
 
@@ -29,77 +101,7 @@ def get_groq_client():
     return _client
 
 
-ROUTING_SYSTEM_PROMPT = """
-You are the primary intent and scope router for TrustLine.
 
-TrustLine helps people find relevant, verified helplines and support
-resources. You are NOT a general-purpose chatbot.
-
-Return ONLY valid JSON with these fields:
-{
-  "route": "in_scope" | "needs_clarification" | "out_of_scope",
-  "category": supported category or null,
-  "urgency_tier": "emergency" | "urgent" | "general",
-  "state": string or null,
-  "district": string or null,
-  "country": string,
-  "language": string,
-  "clarification_question": string or null
-}
-
-Supported categories:
-cyber_crime, domestic_violence, mental_health, child_helpline,
-women_safety, legal_aid, health_emergency, animal_husbandry,
-senior_citizen, disaster_relief, labour_rights, consumer_complaint,
-road_accident, missing_person, general.
-
-Routing rules:
-
-1. in_scope:
-   The user is seeking help that fits a supported category.
-   Select the most relevant category.
-   Use "general" only when the user clearly needs support or helpline
-   discovery but no more specific category fits.
-   Set clarification_question to null.
-
-2. needs_clarification:
-   The request may relate to support, but the actual need is unclear.
-   Do not guess a category.
-   Set category to null and ask ONE short, relevant question in the
-   user's language.
-   Use recent conversation context when it is available and relevant.
-
-3. out_of_scope:
-   The request is clearly unrelated to helplines or supported support
-   services, such as unrelated coding help, jokes, entertainment, or
-   general trivia.
-   Set category and clarification_question to null.
-   Do not answer the unrelated request.
-
-4. SAFETY:
-   Never classify a possible crisis, abuse, self-harm, or immediate
-   danger request as out_of_scope merely because the wording is short
-   or ambiguous.
-   If the support need is unclear, use needs_clarification and ask a
-   safety-relevant question. If the need is clear, choose the relevant
-   support category and in_scope.
-
-5. LOCATION:
-   Extract a location only when the user explicitly provides one.
-   If no country is mentioned, return an empty string for country.
-   Do not infer a location from the language.
-   Return null for an unmentioned state or district.
-
-6. LANGUAGE:
-   Identify the language of the user's current message.
-   Return the clarification question in that language when clarification
-   is needed.
-
-7. Output rules:
-   For in_scope, category MUST be one of the supported categories.
-   For needs_clarification and out_of_scope, category MUST be null.
-   Do not invent helpline numbers, agencies, or resources.
-"""
 
 
 
@@ -196,6 +198,16 @@ def classify_query(query_text, context=None):
             messages=messages,
             temperature=0,
             timeout=8,
+            response_format={
+                "type": "json_schema",
+                "json_schema": {
+                    "name":"trustline_routing",
+                    "strict": True,
+                    "schema": ROUTING_JSON_SCHEMA,
+                }
+
+                }
+
         )
 
         raw = response.choices[0].message.content
@@ -252,7 +264,7 @@ def classify_query(query_text, context=None):
 
     
 
-def format_response(query_text,resources=None, user_lang="English"):
+def format_response(query_text,resources=None, user_lang="English", knowledge_context=" "):
     """Generate only natural-language guidance.
 
     Resource facts such as phone numbers, names, and URLs are intentionally
@@ -272,26 +284,171 @@ def format_response(query_text,resources=None, user_lang="English"):
         resp = get_groq_client().chat.completions.create(
             model=GROQ_MODEL,
            messages=[
-                {"role": "system", "content": (
-                    "You are a response formatter for a verified helpline system. "
-                    "Write EXACTLY 2-3 short sentences. Nothing more.\n"
-                    "RULES (zero exceptions):\n"
-                    "1. Never mention any phone number, URL, email, website, or portal name — "
-                    "not even well-known ones — unless it is word-for-word in the verified context given.\n"
-                    "2. Never suggest 'visit the website' or give step-by-step instructions naming "
-                    "specific agencies/portals not explicitly given to you.\n"
-                    "3. Only give brief emotional support + one safety tip (e.g. preserve evidence, "
-                    "don't share OTPs). The resource cards below already show contact details.\n"
-                    "4. Use markdown formatting: **bold** for key terms, bullet points if listing tips.\n"
-                    f"5. Respond in {user_lang}, regardless of what language the query was in."
-                )},
-                {"role": "user", "content": f"User asked: {query_text}{context_notes}"},
-            ],
+    {
+        "role": "system",
+        "content": build_response_system_prompt(user_lang),
+    },
+    {
+        "role": "user",
+        "content": build_response_user_prompt(
+            query_text,
+            context_notes=context_notes,
+            knowledge_context=knowledge_context,
+        ),
+    },
+],
             temperature=0,
-            timeout=5,
+            timeout=GROQ_FORMAT_TIMEOUT,
         )
         return resp.choices[0].message.content.strip()
 
     except Exception:
         return "We found some verified resources for you below. If this is urgent, please contact them directly."
+
+def format_response_with_tools(query_text, resources=None, user_lang="English"):
+    context_notes = ""
+
+    if resources:
+        descriptions = [
+            item.get("description")
+            for item in resources
+            if isinstance(item, dict) and item.get("description")
+        ]
+
+        if descriptions:
+            context_notes = (
+                "\nVerified context (use ONLY this, nothing else): "
+                + " | ".join(descriptions)
+            )
+
+    messages = [
+        {
+            "role": "system",
+            "content": build_response_system_prompt(user_lang),
+        },
+        {
+            "role": "user",
+            "content": build_response_user_prompt(
+                query_text,
+                context_notes=context_notes,
+                knowledge_context="",
+            ),
+        },
+    ]
+
+    knowledge_results = []
+
+    try:
+        response = get_groq_client().chat.completions.create(
+            model=GROQ_MODEL,
+            messages=messages,
+            tools=TOOL_DEFINITIONS,
+            tool_choice="auto",
+            parallel_tool_calls=False,
+            temperature=0,
+            timeout=GROQ_FORMAT_TIMEOUT,
+        )
+
+        assistant_message = response.choices[0].message
+
+        if not assistant_message.tool_calls:
+            return {
+                "reply": (
+                    "I couldn't retrieve relevant guidance from the "
+                    "knowledge base. Please contact a verified support "
+                    "service directly."
+                ),
+                "knowledge_results": [],
+            }
+
+        messages.append(
+            assistant_message.model_dump(exclude_none=True)
+        )
+
+        for tool_call in assistant_message.tool_calls:
+            tool_name = tool_call.function.name
+
+            try:
+                arguments = json.loads(tool_call.function.arguments)
+                tool_result = execute_tool(tool_name, arguments)
+
+                if tool_name == "search_official_guidance":
+                    results = tool_result.get("results", [])
+                    if isinstance(results, list):
+                        knowledge_results.extend(results)
+
+            except Exception:
+                logger.exception("Tool execution failed: %s", tool_name)
+                tool_result = {"error": "Tool execution failed."}
+
+            messages.append({
+                "role": "tool",
+                "tool_call_id": tool_call.id,
+                "content": json.dumps(tool_result),
+            })
+
+        if not knowledge_results:
+            return {
+                "reply": (
+                    "I couldn't retrieve relevant verified guidance "
+                    "at the moment. Please contact a verified support "
+                    "service directly."
+                ),
+                "knowledge_results": [],
+            }
+
+        knowledge_context = build_knowledge_context(
+            knowledge_results,
+            max_chars=5000,
+        )
+
+        messages[1]["content"] = build_response_user_prompt(
+            query_text,
+            context_notes=context_notes,
+            knowledge_context=knowledge_context,
+        )
+
+        final_messages = [
+            {
+                "role": "system",
+                "content": build_response_system_prompt(user_lang),
+            },
+            {
+                "role": "user",
+                "content": build_response_user_prompt(
+                    query_text,
+                    context_notes=context_notes,
+                    knowledge_context=knowledge_context,
+                ),
+            },
+        ]
+
+        final_response = get_groq_client().chat.completions.create(
+            model=GROQ_MODEL,
+            messages=final_messages,
+            temperature=0,
+            timeout=GROQ_FORMAT_TIMEOUT,
+        )
+        reply = (
+            final_response.choices[0].message.content or ""
+        ).strip()
+
+        if not reply:
+            raise ValueError("Groq returned an empty response")
+
+        return {
+            "reply": reply,
+            "knowledge_results": knowledge_results,
+        }
+
+    except Exception:
+        logger.exception("Tool-enabled response generation failed")
+
+        return {
+            "reply": (
+                "We could not generate a grounded response at the "
+                "moment. Please contact a verified support service directly."
+            ),
+            "knowledge_results": knowledge_results,
+        }
 

@@ -1,4 +1,6 @@
 from django.db import models
+from pgvector.django import VectorField
+
 
 # Create your models here.
 class Helpline(models.Model):
@@ -104,3 +106,40 @@ class ChatSession(models.Model):
         indexes = [models.Index(fields=["slug"])]
 
 
+class KnowledgeDocument(models.Model):
+    title = models.CharField(max_length=255)
+    source_type = models.CharField(max_length=20)
+    source_url = models.URLField(blank=True, null=True)
+    checksum = models.CharField(max_length=64, unique=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
+
+
+class KnowledgeChunk(models.Model):
+    document = models.ForeignKey(
+        KnowledgeDocument,
+        on_delete=models.CASCADE,
+        related_name="chunks"
+    )
+    chunk_index = models.PositiveIntegerField()
+    content = models.TextField()
+
+    # Existing Sentence Transformer produces 384 dimensions
+    embedding = VectorField(dimensions=384)
+
+    metadata = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["document", "chunk_index"],
+                name="unique_document_chunk"
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.document.title} - Chunk {self.chunk_index}"

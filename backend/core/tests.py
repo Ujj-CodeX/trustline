@@ -5,6 +5,7 @@ from unittest.mock import patch
 from django.test import TestCase
 from django.utils import timezone
 from rest_framework.test import APIClient
+from .global_client import get_global_resources
 
 from .models import (
     ChatSession,
@@ -483,3 +484,86 @@ class FallbackClassifierTests(TestCase):
                     result["category"],
                     expected_category,
                 )
+
+
+class GlobalCacheFreshnessTests(TestCase):
+
+    def test_expired_cache_returns_stale_status(self):
+        cache = GlobalResourceCache.objects.create(
+            source_name="test",
+            country="Australia",
+            category="domestic_violence",
+            raw_data=[
+                {
+                    "name": "Test Helpline",
+                    "verification_status": "verified_authority",
+                    "voice_numbers": ["000"],
+                }
+            ],
+            ttl_expiry=timezone.now() - timedelta(days=1),
+        )
+
+        # Ensure this is an expired cache entry.
+        GlobalResourceCache.objects.filter(pk=cache.pk).update(
+            fetched_at=timezone.now() - timedelta(days=2)
+        )
+
+        with patch(
+            "core.global_client._fetch_external_api",
+            return_value=None,
+        ):
+            resources = get_global_resources(
+                "Australia",
+                "domestic_violence",
+            )
+
+        self.assertEqual(len(resources), 1)
+
+        resource = resources[0]
+
+        self.assertEqual(resource["cache_status"], "stale")
+        self.assertTrue(resource["is_stale"])
+
+        self.assertEqual(resource["verification_status"], "stale")
+        self.assertEqual(
+            resource["source_verification_status"],
+            "verified_authority",
+        )
+
+    def test_fresh_cache_returns_fresh_status(self):
+        GlobalResourceCache.objects.create(
+            source_name="test",
+            country="Australia",
+            category="domestic_violence",
+            raw_data=[
+                {
+                    "name": "Test Helpline",
+                    "verification_status": "verified_authority",
+                }
+            ],
+            ttl_expiry=timezone.now() + timedelta(days=1),
+        )
+
+        resources = get_global_resources(
+            "Australia",
+            "domestic_violence",
+        )
+
+        self.assertEqual(resources[0]["cache_status"], "fresh")
+        self.assertFalse(resources[0]["is_stale"])
+        self.assertEqual(
+            resources[0]["verification_status"],
+            "verified_authority",
+        )
+
+    def test_missing_cache_returns_empty_list(self):
+        with patch(
+            "core.global_client._fetch_external_api",
+            return_value=None,
+        ):
+            resources = get_global_resources(
+                "Australia",
+                "legal_aid",
+            )
+
+        self.assertEqual(resources, [])

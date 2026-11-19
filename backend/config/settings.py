@@ -106,8 +106,8 @@ DATABASES = {
         'NAME': env_config('DB_NAME'),
         'USER': env_config('DB_USER'),
         'PASSWORD': env_config('DB_PASSWORD'),
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'HOST': env_config('DB_HOST', default='localhost').strip(),
+        'PORT': env_config('DB_PORT', default='5432').strip(),
     }
 }
 

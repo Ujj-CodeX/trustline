@@ -5,7 +5,16 @@ import requests
 import pycountry
 
 
-GOOGLE_TRANSLATE_API_KEY = config("GOOGLE_TRANSLATE_API_KEY")
+def _get_google_translate_api_key():
+    """Return the optional Google Translation key or fail clearly."""
+    api_key = config("GOOGLE_TRANSLATE_API_KEY", default="").strip()
+    if not api_key:
+        raise RuntimeError(
+            "GOOGLE_TRANSLATE_API_KEY is not configured; "
+            "Google translation is disabled."
+        )
+    return api_key
+
 
 ARGOS_LANGUAGE_MAP = {
     "English": "en",
@@ -121,7 +130,7 @@ def google_translate_text(text, target_lang_name,source_lang_name=None,):
     )
 
     params = {
-        "key": GOOGLE_TRANSLATE_API_KEY
+        "key": _get_google_translate_api_key()
     }
 
     payload = {
@@ -184,7 +193,7 @@ def google_translate_texts(texts, target_lang_name, source_lang_name=None):
     # Cloud Translation v2 documents q/target/source/format as request
     # parameters. Sending q as repeated parameters also preserves batching.
     params = {
-        "key": GOOGLE_TRANSLATE_API_KEY,
+        "key": _get_google_translate_api_key(),
         "q": texts,
         "target": target_code,
         "format": "text",
